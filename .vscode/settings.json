@@ -1,0 +1,28 @@
+{
+    "files.associations": {
+        "*.yaml": "yaml",
+        "debos*.yaml": "jinja-yaml",
+        "recipe*.yaml": "jinja-yaml"
+    },
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+
+    "[yaml]": {
+        "editor.tabSize": 2
+    },
+    "[jinja-yaml]": {
+        "editor.tabSize": 2
+    },
+    "[makefile]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 8
+    },
+    "[makefile2]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 8
+    },
+    "[shellscript]": {
+        "files.eol": "\n"
+    }
+}

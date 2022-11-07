@@ -1,0 +1,89 @@
+name: Build Images
+run-name: Build Quartz64 images for @${{ github.actor }}
+on:
+  workflow_dispatch:
+    inputs:
+      kernelRepo:
+        description: "kernel repo to build"
+        required: false
+        type: string
+        default: neggles/linux-quartz64
+      kernelRef:
+        description: "kernel repo ref"
+        required: false
+        type: string
+        default: "sbci-quartz64"
+
+      ubootRepo:
+        description: "u-boot repo to build"
+        required: false
+        type: string
+        default: neggles/u-boot-quartz64
+      ubootRef:
+        description: "u-boot repo ref"
+        required: false
+        type: string
+        default: "sbci-quartz64"
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  kernel-config: rk356x.config
+  uboot-config: rk3566-quartz64.config
+
+jobs:
+  upload-config:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Clone workflow repo
+        uses: actions/checkout@v3
+
+      - name: Copy config files
+        run: |
+          cp ./configs/kernel/${{ env.kernel-config }} ./kernel.config
+          cp ./configs/u-boot/${{ env.uboot-config }} ./uboot.config
+
+      - name: Upload kernel config
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-config
+          path: kernel.config
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload u-boot config
+        uses: actions/upload-artifact@v3
+        with:
+          name: uboot-config
+          path: uboot.config
+          retention-days: 7
+          if-no-files-found: error
+
+
+  build-uboot:
+    needs: upload-config
+    uses: ./.github/workflows/quartz64-uboot.yaml
+    with:
+      sourceRepo: ${{ inputs.ubootRepo }}
+      sourceRef: ${{ inputs.ubootRef }}
+
+  build-kernel:
+    needs: upload-config
+    uses: ./.github/workflows/quartz64-kernel.yaml
+    with:
+      sourceRepo: ${{ inputs.kernelRepo }}
+      sourceRef: ${{ inputs.kernelRef }}
+
+  # build-image:
+  #   needs:
+  #     - build-uboot
+  #     - build-kernel
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       boards: [
+  #           { name: "SOQuartz Blade",  }
+  #         ]

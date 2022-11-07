@@ -1,0 +1,70 @@
+name: build u-boot package
+
+on:
+  workflow_call:
+    inputs:
+      sourceRepo:
+        required: true
+        type: string
+      sourceRef:
+        required: true
+        type: string
+      makeTarget:
+        default: ""
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Disable initramfs update
+        run: sudo sed -i 's/yes/no/g' /etc/initramfs-tools/update-initramfs.conf
+      - name: Disable man-db update
+        run: sudo rm -f /var/lib/man-db/auto-update
+      - name: Install toolchain
+        id: toolchain
+        run: |
+          sudo apt -y update
+          sudo apt -y install build-essential crossbuild-essential-arm64 device-tree-compiler
+
+      - name: Clone rkbin repository
+        id: get-rkbin
+        uses: actions/checkout@v3
+        with:
+          repository: "rockchip-linux/rkbin"
+          path: rkbin
+
+      - name: Clone u-boot repository
+        id: get-uboot
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.sourceRepo }}
+          ref: ${{ inputs.sourceRef }}
+          path: u-boot
+
+      - name: Download u-boot config
+        id: get-config
+        uses: actions/download-artifact@v3
+        with:
+          name: uboot-config
+          path: u-boot
+
+      - name: Build u-boot
+        id: build
+        working-directory: u-boot
+        run: |
+          mv u-boot.config .config
+          ./make.sh ${{ inputs.makeTarget }}
+
+      - name: Upload artifacts
+        id: upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: u-boot-bin
+          path: |
+            u-boot/idblock.bin
+            u-boot/uboot.img
+            u-boot/*_spl_loader_*.bin
+          retention-days: 7
+          if-no-files-found: error

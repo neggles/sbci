@@ -1,0 +1,69 @@
+name: build kernel package
+
+on:
+  workflow_call:
+    inputs:
+      sourceRepo:
+        required: true
+        type: string
+      sourceRef:
+        required: true
+        type: string
+      makeTarget:
+        required: false
+        default: "bindeb-pkg"
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Disable initramfs update
+        run: sudo sed -i 's/yes/no/g' /etc/initramfs-tools/update-initramfs.conf
+      - name: Disable man-db update
+        run: sudo rm -f /var/lib/man-db/auto-update
+      - name: Install toolchain
+        id: toolchain
+        run: |
+          sudo apt -y update
+          sudo apt -y install build-essential crossbuild-essential-arm64 device-tree-compiler \
+            quilt ccache flex bison libssl-dev dh-exec rsync libelf-dev bc fakeroot
+
+      - name: Clone kernel repository
+        id: get-linux
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.sourceRepo }}
+          ref: ${{ inputs.sourceRef }}
+          path: linux
+
+      - name: Download kernel config
+        id: get-config
+        uses: actions/download-artifact@v3
+        with:
+          name: kernel-config
+          path: linux
+
+      - name: Configure kernel
+        id: configure
+        working-directory: linux
+        run: |
+          mv kernel.config .config
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
+
+      - name: Build kernel
+        id: build
+        working-directory: linux
+        run: |
+          make -j ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
+
+      - name: Upload artifacts
+        id: upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-pkg
+          path: |
+            linux-image-*.deb
+            linux-libc-dev*.deb
+          retention-days: 7
+          if-no-files-found: error
