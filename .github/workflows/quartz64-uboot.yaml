@@ -47,7 +47,7 @@ jobs:
         id: get-config
         uses: actions/download-artifact@v3
         with:
-          name: uboot-config
+          name: u-boot-config
           path: u-boot
 
       - name: Build u-boot

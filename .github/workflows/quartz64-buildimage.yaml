@@ -31,7 +31,7 @@ defaults:
 
 env:
   kernel-config: rk356x.config
-  uboot-config: rk3566-quartz64.config
+  u-boot-config: rk3566-quartz64.config
 
 jobs:
   upload-config:
@@ -43,7 +43,7 @@ jobs:
       - name: Copy config files
         run: |
           cp ./configs/kernel/${{ env.kernel-config }} ./kernel.config
-          cp ./configs/u-boot/${{ env.uboot-config }} ./uboot.config
+          cp ./configs/u-boot/${{ env.u-boot-config }} ./u-boot.config
 
       - name: Upload kernel config
         uses: actions/upload-artifact@v3
@@ -56,8 +56,8 @@ jobs:
       - name: Upload u-boot config
         uses: actions/upload-artifact@v3
         with:
-          name: uboot-config
-          path: uboot.config
+          name: u-boot-config
+          path: u-boot.config
           retention-days: 7
           if-no-files-found: error
 
