@@ -26,13 +26,21 @@ jobs:
         id: toolchain
         run: |
           sudo apt -y update
-          sudo apt -y install build-essential crossbuild-essential-arm64 crossbuild-essential-armhf device-tree-compiler
+          sudo apt -y install build-essential crossbuild-essential-arm64 device-tree-compiler
+
+      - name: Clone toolchain repository
+        id: get-rkbin
+        uses: actions/checkout@v3
+        with:
+          repository: neggles/sbci-toolchains
+          ref: u-boot-quartz64
+          path: toolchain
 
       - name: Clone rkbin repository
         id: get-rkbin
         uses: actions/checkout@v3
         with:
-          repository: "rockchip-linux/rkbin"
+          repository: rockchip-linux/rkbin
           path: rkbin
 
       - name: Clone u-boot repository
@@ -55,6 +63,7 @@ jobs:
         working-directory: u-boot
         run: |
           mv u-boot.config .config
+          make oldconfig
           ./make.sh ${{ inputs.make-target }}
 
       - name: Upload artifacts
