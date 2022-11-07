@@ -3,13 +3,13 @@ name: Quartz64 kernel build
 on:
   workflow_call:
     inputs:
-      sourceRepo:
+      source-repo:
         required: true
         type: string
-      sourceRef:
+      source-ref:
         required: true
         type: string
-      makeTarget:
+      make-target:
         required: false
         default: "bindeb-pkg"
         type: string
@@ -33,8 +33,8 @@ jobs:
         id: get-linux
         uses: actions/checkout@v3
         with:
-          repository: ${{ inputs.sourceRepo }}
-          ref: ${{ inputs.sourceRef }}
+          repository: ${{ inputs.source-repo }}
+          ref: ${{ inputs.source-ref }}
           path: linux
 
       - name: Download kernel config

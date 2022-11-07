@@ -3,25 +3,35 @@ run-name: Quartz64 build via ${{ github.event_name }}
 on:
   workflow_dispatch:
     inputs:
-      kernelRepo:
-        description: "kernel repo to build"
+      build-kernel:
+        description: Build kernel?
+        required: false
+        default:  true
+        type: boolean
+      kernel-repo:
+        description: Kernel source repo
         required: false
         type: string
         default: neggles/linux-quartz64
-      kernelRef:
-        description: "kernel repo ref"
-        required: false
+      kernel-ref:
+        description: Kernel repo ref
+        required: true
         type: string
         default: "sbci-quartz64"
 
-      ubootRepo:
-        description: "u-boot repo to build"
+      build-u-boot:
+        description: Build u-boot?
+        required: false
+        default:  true
+        type: boolean
+      u-boot-repo:
+        description: U-Boot source repo
         required: false
         type: string
         default: neggles/u-boot-quartz64
-      ubootRef:
-        description: "u-boot repo ref"
-        required: false
+      u-boot-ref:
+        description: u-boot repo ref
+        required: true
         type: string
         default: "sbci-quartz64"
 
@@ -32,6 +42,7 @@ defaults:
 env:
   kernel-config: rk356x.config
   u-boot-config: rk3566-quartz64.config
+  build-image: ${{ inputs.build-kernel && inputs.build-u-boot }}
 
 jobs:
   upload-config:
@@ -63,20 +74,23 @@ jobs:
 
 
   build-uboot:
+    if: ${{ inputs.build-u-boot }}
     needs: upload-config
-    uses: ./.github/workflows/quartz64-uboot.yaml
+    uses: ./.github/workflows/quartz64-u-boot.yaml
     with:
-      sourceRepo: ${{ inputs.ubootRepo }}
-      sourceRef: ${{ inputs.ubootRef }}
+      source-repo: ${{ inputs.u-boot-repo }}
+      source-ref: ${{ inputs.u-boot-ref }}
 
   build-kernel:
+    if: ${{ inputs.build-kernel }}
     needs: upload-config
     uses: ./.github/workflows/quartz64-kernel.yaml
     with:
-      sourceRepo: ${{ inputs.kernelRepo }}
-      sourceRef: ${{ inputs.kernelRef }}
+      source-repo: ${{ inputs.kernel-repo }}
+      source-ref: ${{ inputs.kernel-ref }}
 
   # build-image:
+  #   if: ${{ inputs.build-kernel and inputs.build-u-boot }}
   #   needs:
   #     - build-uboot
   #     - build-kernel

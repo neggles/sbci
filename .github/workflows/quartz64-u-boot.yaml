@@ -3,13 +3,13 @@ name: Quartz64 u-boot build
 on:
   workflow_call:
     inputs:
-      sourceRepo:
+      source-repo:
         required: true
         type: string
-      sourceRef:
+      source-ref:
         required: true
         type: string
-      makeTarget:
+      make-target:
         default: ""
         required: false
         type: string
@@ -39,8 +39,8 @@ jobs:
         id: get-uboot
         uses: actions/checkout@v3
         with:
-          repository: ${{ inputs.sourceRepo }}
-          ref: ${{ inputs.sourceRef }}
+          repository: ${{ inputs.source-repo }}
+          ref: ${{ inputs.source-ref }}
           path: u-boot
 
       - name: Download u-boot config
@@ -55,7 +55,7 @@ jobs:
         working-directory: u-boot
         run: |
           mv u-boot.config .config
-          ./make.sh ${{ inputs.makeTarget }}
+          ./make.sh ${{ inputs.make-target }}
 
       - name: Upload artifacts
         id: upload
