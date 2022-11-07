@@ -26,7 +26,7 @@ jobs:
         id: toolchain
         run: |
           sudo apt -y update
-          sudo apt -y install build-essential crossbuild-essential-arm64 device-tree-compiler
+          sudo apt -y install build-essential crossbuild-essential-arm64 crossbuild-essential-armhf device-tree-compiler
 
       - name: Clone rkbin repository
         id: get-rkbin
