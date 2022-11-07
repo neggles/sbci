@@ -1,4 +1,4 @@
-name: build kernel package
+name: Quartz64 kernel build
 
 on:
   workflow_call:

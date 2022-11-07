@@ -1,4 +1,4 @@
-name: build u-boot package
+name: Quartz64 u-boot build
 
 on:
   workflow_call:
