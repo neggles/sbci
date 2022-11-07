@@ -55,7 +55,7 @@ jobs:
         id: build
         working-directory: linux
         run: |
-          make -j ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
+          nice -n1 make -j4 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
 
       - name: Upload artifacts
         id: upload
