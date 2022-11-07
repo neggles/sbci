@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     steps:
       - name: Disable initramfs update
         run: sudo sed -i 's/yes/no/g' /etc/initramfs-tools/update-initramfs.conf
@@ -55,7 +55,8 @@ jobs:
         id: build
         working-directory: linux
         run: |
-          nice -n1 make -j4 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
+          nproc=$(nproc)
+          nice -n1 make -j$nproc ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
 
       - name: Upload artifacts
         id: upload
