@@ -13,6 +13,10 @@ on:
         default: ""
         required: false
         type: string
+      artifact-name:
+        required: false
+        default: "u-boot-bin"
+        type: string
 
 jobs:
   build:
@@ -66,7 +70,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v3
         with:
-          name: u-boot-bin
+          name: ${{ inputs.artifact-name }}
           path: |
             u-boot/idblock.bin
             u-boot/uboot.img

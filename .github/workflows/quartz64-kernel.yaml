@@ -9,14 +9,14 @@ on:
       source-ref:
         required: true
         type: string
-      make-target:
+      artifact-name:
         required: false
-        default: "bindeb-pkg"
+        default: "kernel-debs"
         type: string
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: [ self-hosted, linux, x64 ]
     steps:
       - name: Install toolchain
         id: toolchain
@@ -51,16 +51,14 @@ jobs:
         id: build
         working-directory: linux
         run: |
-          nproc=$(nproc)
-          nice -n1 make -j$nproc ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
+          make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
 
       - name: Upload artifacts
         id: upload
         uses: actions/upload-artifact@v3
         with:
-          name: kernel-pkg
+          name: ${{ inputs.artifact-name }}
           path: |
-            linux-image-*.deb
-            linux-libc-dev*.deb
+            linux-*.deb
           retention-days: 7
           if-no-files-found: error

@@ -1,36 +1,27 @@
 name: Quartz64 Image Build
 run-name: Quartz64 build via ${{ github.event_name }}
+
 on:
   workflow_dispatch:
     inputs:
       build-kernel:
-        description: Build kernel?
-        required: false
+        description: Build kernel package
+        required: true
         default:  true
         type: boolean
-      kernel-repo:
-        description: Kernel source repo
-        required: false
-        type: string
-        default: neggles/linux-quartz64
+      build-u-boot:
+        description: Build u-boot package
+        required: true
+        default:  true
+        type: boolean
+
       kernel-ref:
-        description: Kernel repo ref
+        description: Kernel source ref
         required: true
         type: string
         default: "sbci-quartz64"
-
-      build-u-boot:
-        description: Build u-boot?
-        required: false
-        default:  true
-        type: boolean
-      u-boot-repo:
-        description: U-Boot source repo
-        required: false
-        type: string
-        default: neggles/u-boot-quartz64
       u-boot-ref:
-        description: u-boot repo ref
+        description: u-boot source ref
         required: true
         type: string
         default: "sbci-quartz64"
@@ -40,6 +31,8 @@ defaults:
     shell: bash
 
 env:
+  kernel-repo: neggles/linux-quartz64
+  u-boot-repo: neggles/u-boot-quartz64
   kernel-config: rk356x.config
   u-boot-config: rk3566-quartz64.config
   build-image: ${{ inputs.build-kernel && inputs.build-u-boot }}
@@ -78,7 +71,7 @@ jobs:
     needs: upload-config
     uses: ./.github/workflows/quartz64-u-boot.yaml
     with:
-      source-repo: ${{ inputs.u-boot-repo }}
+      source-repo: ${{ env.u-boot-repo }}
       source-ref: ${{ inputs.u-boot-ref }}
 
   build-kernel:
@@ -86,11 +79,11 @@ jobs:
     needs: upload-config
     uses: ./.github/workflows/quartz64-kernel.yaml
     with:
-      source-repo: ${{ inputs.kernel-repo }}
+      source-repo: ${{ env.kernel-repo }}
       source-ref: ${{ inputs.kernel-ref }}
 
   # build-image:
-  #   if: ${{ inputs.build-kernel and inputs.build-u-boot }}
+  #   if: ${{ env.build-image }}
   #   needs:
   #     - build-uboot
   #     - build-kernel
