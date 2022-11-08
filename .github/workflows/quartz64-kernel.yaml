@@ -16,12 +16,8 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     steps:
-      - name: Disable initramfs update
-        run: sudo sed -i 's/yes/no/g' /etc/initramfs-tools/update-initramfs.conf
-      - name: Disable man-db update
-        run: sudo rm -f /var/lib/man-db/auto-update
       - name: Install toolchain
         id: toolchain
         run: |
