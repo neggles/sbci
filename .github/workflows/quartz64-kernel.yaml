@@ -13,10 +13,16 @@ on:
         required: false
         default: "kernel-debs"
         type: string
+    outputs:
+      kernelrelease:
+        description: "uname -r"
+        value: ${{ jobs.build.outputs.kernelrelease }}
 
 jobs:
   build:
     runs-on: [ self-hosted, linux, x64 ]
+    outputs:
+      kernelrelease: ${{ steps.build.outputs.kernelrelease }}
     steps:
       - name: Install toolchain
         id: toolchain
@@ -52,6 +58,7 @@ jobs:
         working-directory: linux
         run: |
           make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
+          echo "kernelrelease=$(make -s kernelrelease)" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
         id: upload
@@ -60,5 +67,5 @@ jobs:
           name: ${{ inputs.artifact-name }}
           path: |
             linux-*.deb
-          retention-days: 7
+          retention-days: 30
           if-no-files-found: error

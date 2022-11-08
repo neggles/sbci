@@ -9,18 +9,33 @@ on:
       source-ref:
         required: true
         type: string
+      board-name:
+        required: false
+        default: "quartz64"
+        type: string
       make-target:
         default: ""
         required: false
         type: string
+    outputs:
       artifact-name:
-        required: false
-        default: "u-boot-bin"
-        type: string
+        description: "output artifact name"
+        value: ${{ jobs.build.outputs.artifact }}
+      fw-blob:
+        description: "firmware blob name"
+        value: ${{ jobs.build.outputs.fw_blob }}
+
+env:
+  loader_bin: idblock.bin
+  u_boot_bin: uboot.img
+  fw_blob_name: firmware-${{ inputs.board-name }}.bin
 
 jobs:
   build:
     runs-on: ubuntu-22.04
+    outputs:
+      artifact: u-boot-${{ inputs.board-name }}
+      fw_blob: ${{ env.fw_blob_name }}.gz
     steps:
       - name: Install toolchain
         id: toolchain
@@ -66,14 +81,24 @@ jobs:
           make oldconfig
           ./make.sh ${{ inputs.make-target }}
 
+      - name: Assemble firmware blob
+        id: blorb
+        working-directory: u-boot
+        run: |
+          fallocate -l32m ${{ env.fw_blob_name }}
+          dd if=${{ env.loader_bin }} of=${{ env.fw_blob_name }} conv=notrunc bs=32K seek=1
+          dd if=${{ env.u_boot_bin }} of=${{ env.fw_blob_name }} conv=notrunc bs=32K seek=256
+          gzip ${{ env.fw_blob_name }}
+
       - name: Upload artifacts
         id: upload
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.artifact-name }}
+          name: u-boot-${{ inputs.board-name }}
           path: |
-            u-boot/idblock.bin
-            u-boot/uboot.img
+            u-boot/${{ env.loader_bin }}
+            u-boot/${{ env.u_boot_bin }}
+            u-boot/${{ env.fw_blob_name }}.gz
             u-boot/*_spl_loader_*.bin
-          retention-days: 7
+          retention-days: 30
           if-no-files-found: error
