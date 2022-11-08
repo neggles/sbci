@@ -27,9 +27,10 @@ jobs:
       - name: Install toolchain
         id: toolchain
         run: |
-          sudo apt -y update
-          sudo apt -y install build-essential crossbuild-essential-arm64 device-tree-compiler \
-            quilt ccache flex bison libssl-dev dh-exec rsync libelf-dev bc fakeroot
+          sudo apt-get -yq update && sudo apt-get -yq upgrade
+          sudo apt-get -yq install build-essential crossbuild-essential-arm64 device-tree-compiler \
+            autoconf bc bison flex ccache cpio dkms fakeroot kmod quilt rsync dh-exec \
+            libssl-dev libncurses-dev libelf-dev libudev-dev libpci-dev libiberty-dev
 
       - name: Clone kernel repository
         id: get-linux
