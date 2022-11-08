@@ -31,11 +31,13 @@ defaults:
     shell: bash
 
 env:
-  kernel-repo: neggles/linux-quartz64
-  u-boot-repo: neggles/u-boot-quartz64
-  kernel-config: rk356x.config
-  u-boot-config: rk3566-quartz64.config
-  build-image: ${{ inputs.build-kernel && inputs.build-u-boot }}
+  kernel_repo: neggles/linux-quartz64
+  kernel_config: rk356x.config
+
+  u_boot_repo: neggles/u-boot-quartz64
+  u_boot_config: rk3566-quartz64.config
+
+  build_image: ${{ inputs.build-kernel && inputs.build-u-boot }}
 
 jobs:
   upload-config:
@@ -46,13 +48,13 @@ jobs:
 
       - name: Copy config files
         run: |
-          cp ./configs/kernel/${{ env.kernel-config }} ./kernel.config
-          cp ./configs/u-boot/${{ env.u-boot-config }} ./u-boot.config
+          cp ./configs/kernel/${{ env.kernel_config }} ./kernel.config
+          cp ./configs/u-boot/${{ env.u_boot_config }} ./u-boot.config
 
       - name: Upload kernel config
         uses: actions/upload-artifact@v3
         with:
-          name: kernel-config
+          name: kernel_config
           path: kernel.config
           retention-days: 7
           if-no-files-found: error
@@ -60,7 +62,7 @@ jobs:
       - name: Upload u-boot config
         uses: actions/upload-artifact@v3
         with:
-          name: u-boot-config
+          name: u_boot_config
           path: u-boot.config
           retention-days: 7
           if-no-files-found: error
@@ -71,7 +73,7 @@ jobs:
     needs: upload-config
     uses: ./.github/workflows/quartz64-u-boot.yaml
     with:
-      source-repo: ${{ env.u-boot-repo }}
+      source-repo: ${{ env.u_boot_repo }}
       source-ref: ${{ inputs.u-boot-ref }}
 
   build-kernel:
@@ -79,11 +81,11 @@ jobs:
     needs: upload-config
     uses: ./.github/workflows/quartz64-kernel.yaml
     with:
-      source-repo: ${{ env.kernel-repo }}
+      source-repo: ${{ env.kernel_repo }}
       source-ref: ${{ inputs.kernel-ref }}
 
-  # build-image:
-  #   if: ${{ env.build-image }}
+  # build_image:
+  #   if: ${{ env.build_image }}
   #   needs:
   #     - build-uboot
   #     - build-kernel
