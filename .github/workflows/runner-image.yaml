@@ -1,6 +1,9 @@
 name: Self-hosted runner image build
 
 on:
+  push:
+    paths:
+      - "docker/Dockerfile.runner"
   workflow_dispatch:
     inputs:
       push:
