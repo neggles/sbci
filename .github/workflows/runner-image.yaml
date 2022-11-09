@@ -1,4 +1,4 @@
-name: Build runner image
+name: Self-hosted runner image build
 
 on:
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        if: inputs.push == 'true'
+        if: inputs.push
         uses: docker/build-push-action@v3
         with:
           context: "{{defaultContext}}:docker"
