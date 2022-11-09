@@ -31,12 +31,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        if: inputs.push
         uses: docker/build-push-action@v3
         with:
           context: "{{defaultContext}}:docker"
           file: "./Dockerfile."
-          push: true
+          push: ${{ inputs.push }}
           tags: ghcr.io/neggles/sbci-actions-runner:latest,ghcr.io/neggles/sbci-actions-runner:${{ github.ref_name }}
           labels: org.opencontainers.image.description="sbci runner image"
           cache-from: type=gha
