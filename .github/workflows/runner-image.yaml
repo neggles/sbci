@@ -35,8 +35,11 @@ jobs:
         with:
           context: "{{defaultContext}}:docker"
           file: "./Dockerfile.runner"
+          platforms: linux/amd64,linux/arm64
           push: ${{ inputs.push }}
-          tags: ghcr.io/neggles/sbci-actions-runner:latest,ghcr.io/neggles/sbci-actions-runner:${{ github.ref_name }}
+          tags: |
+            ghcr.io/neggles/sbci-actions-runner:latest
+            ghcr.io/neggles/sbci-actions-runner:${{ github.ref_name }}
           labels: org.opencontainers.image.description="sbci runner image"
           cache-from: type=gha
           cache-to: type=gha,mode=max
