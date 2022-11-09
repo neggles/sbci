@@ -13,6 +13,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout workflow repo
+        uses: actions/checkout@v3
+
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v2
@@ -34,7 +37,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: "{{defaultContext}}:docker"
-          file: "./Dockerfile."
+          file: "./Dockerfile.runner"
           push: ${{ inputs.push }}
           tags: ghcr.io/neggles/sbci-actions-runner:latest,ghcr.io/neggles/sbci-actions-runner:${{ github.ref_name }}
           labels: org.opencontainers.image.description="sbci runner image"
