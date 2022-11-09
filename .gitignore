@@ -96,6 +96,9 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,windows,visualstudiocode
 
+# code-workspace files in root
+/*.code-workspace
+
 # local misc and temp
 /misc/
 /temp/
