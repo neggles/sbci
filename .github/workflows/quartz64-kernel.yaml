@@ -29,7 +29,7 @@ jobs:
         run: |
           sudo apt-get -yq update && sudo apt-get -yq upgrade
           sudo apt-get -yq install build-essential crossbuild-essential-arm64 device-tree-compiler \
-            autoconf bc bison flex ccache cpio dkms fakeroot kmod quilt rsync dh-exec \
+            autoconf bc bison flex ccache cpio dkms fakeroot kmod quilt rsync dh-exec apt-utils \
             libssl-dev libncurses-dev libelf-dev libudev-dev libpci-dev libiberty-dev
 
       - name: Clone kernel repository
