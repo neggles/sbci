@@ -1,5 +1,5 @@
 name: Quartz64 Image Build
-run-name: Quartz64 build via ${{ github.event_name }}
+run-name: Quartz64 image build (${{ github.event_name }})
 
 on:
   workflow_dispatch:
@@ -7,14 +7,13 @@ on:
       build-kernel:
         description: Build kernel package
         required: true
-        default:  true
+        default: true
         type: boolean
       build-u-boot:
         description: Build u-boot package
         required: true
-        default:  true
+        default: true
         type: boolean
-
       kernel-ref:
         description: Kernel source ref
         required: true
@@ -29,6 +28,10 @@ on:
 defaults:
   run:
     shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-k${{ inputs.kernel-ref }}-b${{ inputs.u-boot-ref }}
+  cancel-in-progress: true
 
 env:
   kernel-config: rk356x.config
@@ -63,14 +66,22 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-
   build-uboot:
     if: inputs.build-u-boot
     needs: upload-config
     uses: ./.github/workflows/quartz64-u-boot.yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        board-name: ["quartz64", ]
+        include:
+          - board-name: quartz64
+            make-target: ""
     with:
       source-repo: neggles/u-boot-quartz64
       source-ref: ${{ inputs.u-boot-ref }}
+      board-name: ${{ matrix.board-name }}
+      make-target: ${{ matrix.make-target }}
 
   build-kernel:
     if: inputs.build-kernel
