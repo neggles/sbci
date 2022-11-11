@@ -73,7 +73,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board-name: ["quartz64", ]
+        board-name: ["quartz64"]
         include:
           - board-name: quartz64
             make-target: ""
@@ -90,6 +90,21 @@ jobs:
     with:
       source-repo: neggles/linux-quartz64
       source-ref: ${{ inputs.kernel-ref }}
+
+  dump-output:
+    runs-on: ubuntu-latest
+    needs: [build-uboot, build-kernel]
+    steps:
+      - name: Dump job context
+        run: echo '${{ toJSON(job) }}'
+      - name: Dump steps context
+        run: echo '${{ toJSON(steps) }}'
+      - name: Dump strategy context
+        run: echo '${{ toJSON(strategy) }}'
+      - name: Dump matrix context
+        run: echo '${{ toJSON(matrix) }}'
+      - name: Dump needs context
+        run: echo '${{ toJSON(needs) }}'
 
   # build_image:
   #   if: inputs.build-u-boot && inputs.build-kernel
