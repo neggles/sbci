@@ -1,7 +1,7 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": ["config:base"],
+    "dependencyDashboardAutoclose": true,
     "timezone": "Australia/Melbourne",
-    "schedule": ["after 2am on Monday", "before 8am on Monday"],
-    "dependency-dashboard-autoclose": true
+    "schedule": ["after 2am on Monday", "before 8am on Monday"]
 }
