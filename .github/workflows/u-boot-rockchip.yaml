@@ -4,25 +4,33 @@ on:
   workflow_call:
     inputs:
       source-repo:
+        description: source repo
         required: true
         type: string
       source-ref:
+        description: source ref
         required: true
         type: string
       board:
+        description: target board name
         required: true
         type: string
       config:
+        description: board u-boot config (without .config)
         required: true
         type: string
       envfile:
-        required: true
+        description: "u-boot env file"
+        required: false
         type: string
+        default: ''
       make-target:
-        required: true
+        description: "argument list for make.sh"
+        required: false
         type: string
+        default: ''
     outputs:
-      artifact-name:
+      artifact:
         description: "output artifact name"
         value: ${{ jobs.build.outputs.artifact }}
       fw-blob:
@@ -39,7 +47,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     outputs:
-      artifact: ${{ env.artifact-name }}
+      artifact: u-boot-${{ inputs.board }}
       fw-blob: ${{ env.fw-blob-name }}.gz
     steps:
       - name: Install dependencies
@@ -115,3 +123,16 @@ jobs:
             u-boot/u-boot*
           retention-days: ${{ env.artifact-days }}
           if-no-files-found: error
+
+      - name: Generate matrix entry
+        id: matrix
+        run: |
+          matrix=$(echo '${{ toJSON(matrix) }}' | jq -c .)
+          echo "$matrix" >> ${{ inputs.board }}.json
+
+      - name: Upload board matrix entry
+        id: upload-matrix
+        uses: actions/upload-artifact@v3
+        with:
+          name: image-matrix
+          path: ${{ inputs.board }}.json

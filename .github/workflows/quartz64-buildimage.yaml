@@ -46,6 +46,7 @@ env:
 
 jobs:
   upload-config:
+    name: Prepare board configs
     runs-on: ubuntu-22.04
     steps:
       - name: Clone workflow repo
@@ -72,6 +73,7 @@ jobs:
           if-no-files-found: error
 
   build-kernel:
+    name: Build kernel
     if: inputs.build-kernel
     needs: upload-config
     uses: ./.github/workflows/kernel-aarch64.yaml
@@ -80,6 +82,7 @@ jobs:
       source-ref: ${{ inputs.kernel-ref }}
 
   build-u-boot:
+    name: Build u-boot
     if: inputs.build-u-boot
     needs: upload-config
     uses: ./.github/workflows/u-boot-rockchip.yaml
@@ -100,21 +103,32 @@ jobs:
       make-target: ${{ matrix.board.make-target }}
 
   image-matrix:
-    name: Make image matrix
+    name: Generate image matrix
     runs-on: ubuntu-latest
+    needs: [build-u-boot]
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Download u-boot artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: image-matrix
+          path: matrix
+      - name: Merge matrixes
+        id: matrix
+        working-directory: matrix
+        run: |
+          matrix=$(jq -c -s . ./*.json)
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   dump-output:
     name: Dump contexts
     if: ${{ inputs.debug }}
     runs-on: ubuntu-latest
-    needs: [build-u-boot, build-kernel]
+    needs: [build-u-boot, image-matrix]
     strategy:
       fail-fast: false
-      matrix:
-        u-boot-output:
-          - ${{ needs.build-u-boot.outputs }}
-        kernel-output:
-          - ${{ needs.build-kernel.outputs }}
+      matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
     steps:
       - name: Dump env context
         run: echo '${{ toJSON(env) }}'
@@ -128,6 +142,16 @@ jobs:
         run: echo '${{ toJSON(matrix) }}'
       - name: Dump needs context
         run: echo '${{ toJSON(needs) }}'
+
+  # dump-output-reusable:
+  #   name: Dump contexts from reusable
+  #   needs: [build-u-boot]
+  #   uses: ./.github/workflows/dump-context.yaml
+  #   strategy:
+  #     fail-fast: false
+  #     matrix: ${{ fromJSON(jobs.image-matrix.outputs.matrix) }}
+  #   with:
+  #     board: ${{ matrix.u-boot. }}
 
   # build_image:
   #   if: inputs.build-u-boot && inputs.build-kernel
