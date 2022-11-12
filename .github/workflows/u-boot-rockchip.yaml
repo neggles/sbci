@@ -9,13 +9,17 @@ on:
       source-ref:
         required: true
         type: string
-      board-name:
-        required: false
-        default: "quartz64"
+      board:
+        required: true
+        type: string
+      config:
+        required: true
+        type: string
+      envfile:
+        required: true
         type: string
       make-target:
-        default: ""
-        required: false
+        required: true
         type: string
     outputs:
       artifact-name:
@@ -23,19 +27,20 @@ on:
         value: ${{ jobs.build.outputs.artifact }}
       fw-blob:
         description: "firmware blob name"
-        value: ${{ jobs.build.outputs.fw_blob }}
+        value: ${{ jobs.build.outputs.fw-blob }}
 
 env:
-  loader_bin: idblock.bin
-  u_boot_bin: uboot.img
-  fw_blob_name: firmware-${{ inputs.board-name }}.bin
+  loader-bin: idblock.bin
+  u-boot-bin: uboot.img
+  fw-blob-name: firmware-${{ inputs.board }}
+  artifact-days: 90
 
 jobs:
   build:
     runs-on: ubuntu-22.04
     outputs:
-      artifact: u-boot-${{ inputs.board-name }}
-      fw_blob: ${{ env.fw_blob_name }}.gz
+      artifact: ${{ env.artifact-name }}
+      fw-blob: ${{ env.fw-blob-name }}.gz
     steps:
       - name: Install toolchain
         id: toolchain
@@ -70,14 +75,14 @@ jobs:
         id: get-config
         uses: actions/download-artifact@v3
         with:
-          name: u-boot-config
-          path: u-boot
+          name: u-boot-configs
+          path: configs
 
       - name: Build u-boot
         id: build
         working-directory: u-boot
         run: |
-          mv u-boot.config .config
+          cp -L ../configs/${{ inputs.board }}.config .config
           make oldconfig
           ./make.sh ${{ inputs.make-target }}
 
@@ -85,20 +90,27 @@ jobs:
         id: blorb
         working-directory: u-boot
         run: |
-          fallocate -l32m ${{ env.fw_blob_name }}
-          dd if=${{ env.loader_bin }} of=${{ env.fw_blob_name }} conv=notrunc bs=32K seek=1
-          dd if=${{ env.u_boot_bin }} of=${{ env.fw_blob_name }} conv=notrunc bs=32K seek=256
-          gzip ${{ env.fw_blob_name }}
+          fallocate -l32m ${{ env.fw-blob-name }}
+          dd if=${{ env.loader-bin }} of=${{ env.fw-blob-name }} conv=notrunc bs=32K seek=1
+          dd if=${{ env.u-boot-bin }} of=${{ env.fw-blob-name }} conv=notrunc bs=32K seek=256
+          gzip ${{ env.fw-blob-name }}
 
-      - name: Upload artifacts
-        id: upload
+      - name: Generate u-boot environment
+        id: mkenvimage
+        if: ${{ inputs.envfile != '' }}
+        working-directory: u-boot
+        run: |
+          echo "::warning:: envfile handling not implemented yet"
+
+      - name: Upload build outputs
+        id: upload-u-boot
         uses: actions/upload-artifact@v3
         with:
-          name: u-boot-${{ inputs.board-name }}
+          name: u-boot-${{ inputs.board }}
           path: |
-            u-boot/${{ env.loader_bin }}
-            u-boot/${{ env.u_boot_bin }}
-            u-boot/${{ env.fw_blob_name }}.gz
+            u-boot/${{ env.loader-bin }}
+            u-boot/${{ env.u-boot-bin }}
             u-boot/*_spl_loader_*.bin
-          retention-days: 30
+            u-boot/${{ env.fw-blob-name }}.gz
+          retention-days: ${{ env.artifact-days }}
           if-no-files-found: error

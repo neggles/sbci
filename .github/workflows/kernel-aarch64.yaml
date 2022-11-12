@@ -1,4 +1,5 @@
-name: Quartz64 kernel build
+name: aarch64 kernel bindeb-pkg
+run-name: kernel from ${{ inputs.source-repo }}@${{ inputs.source-ref }}
 
 on:
   workflow_call:
@@ -9,18 +10,25 @@ on:
       source-ref:
         required: true
         type: string
-      artifact-name:
+      kernel-config:
         required: false
-        default: "kernel-debs"
+        default: "kernel.config"
         type: string
     outputs:
-      kernelrelease:
+      release:
         description: "uname -r"
         value: ${{ jobs.build.outputs.kernelrelease }}
+      artifact:
+        description: "uname -r"
+        value: linux-${{ jobs.build.outputs.kernelrelease }}
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64, debian]
     outputs:
       kernelrelease: ${{ steps.build.outputs.kernelrelease }}
     steps:
@@ -29,7 +37,7 @@ jobs:
         run: |
           sudo apt-get -yq update && sudo apt-get -yq upgrade
           sudo apt-get -yq install build-essential crossbuild-essential-arm64 device-tree-compiler \
-            autoconf bc bison flex ccache cpio dkms fakeroot kmod quilt rsync dh-exec apt-utils \
+            autoconf bc bison flex cpio dkms fakeroot kmod quilt rsync dh-exec apt-utils \
             libssl-dev libncurses-dev libelf-dev libudev-dev libpci-dev libiberty-dev
 
       - name: Clone kernel repository
@@ -51,7 +59,7 @@ jobs:
         id: configure
         working-directory: linux
         run: |
-          mv kernel.config .config
+          mv ${{ inputs.kernel-config }} .config
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
 
       - name: Build kernel
@@ -65,7 +73,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.artifact-name }}
+          name: linux-${{ steps.build.outputs.kernelrelease }}
           path: |
             linux-*.deb
           retention-days: 30
