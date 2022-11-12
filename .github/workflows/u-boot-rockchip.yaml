@@ -127,8 +127,8 @@ jobs:
       - name: Generate matrix entry
         id: matrix
         run: |
-          matrix=$(echo '${{ toJSON(matrix) }}' | jq -c .)
-          echo "$matrix" >> ${{ inputs.board }}.json
+          matrix='{"name": "${{ inputs.board }}", "firmware": "${{ env.fw-blob-name }}"}'
+          echo "$matrix" | jq -c . | tee -a ${{ inputs.board }}.json
 
       - name: Upload matrix entry
         id: upload-matrix

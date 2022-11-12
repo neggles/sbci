@@ -1,0 +1,92 @@
+name: zz debos image build
+run-name: ${{ inputs.board }} image build
+on:
+  workflow_call:
+    inputs:
+      board:
+        description: name of target board
+        required: true
+        type: string
+      kernel:
+        description: kernel artifact name
+        required: true
+        type: string
+      firmware:
+        description: firmware artifact name
+        required: true
+        type: string
+      suite:
+        description: debian suite for image
+        required: false
+        type: string
+        default: "bookworm"
+    outputs:
+      artifact:
+        description: image artifact name
+        value: ${{ jobs.build.outputs.artifact }}
+
+env:
+  artifact-name: debiant-${{ inputs.suite }}-${{ inputs.board }}
+
+jobs:
+  build:
+    runs-on: [ self-hosted, linux, x64 ]
+    outputs:
+      artifact: ${{ env.artifact-name }}
+    steps:
+      - name: Install toolchain
+        id: toolchain
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get -yq update && sudo apt-get -yq upgrade
+          sudo apt-get -yq golang git libglib2.0-dev libostree-dev \
+            qemu-system-x86 qemu-user-static debootstrap systemd-container
+
+      - name: install debos
+        id: install-debos
+        run: |
+          go install -v github.com/go-debos/debos/cmd/debos@latest
+
+      - name: Clone repo
+        id: clone
+        uses: actions/checkout@v3
+
+      - name: Download kernel artifact
+        id: get-kernel
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.kernel }}
+          path: recipes/kernel/
+
+      - name: Download u-boot artifact
+        id: get-blorbs
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.firmware }}
+          path: recipes/u-boot/
+
+      - name: List downloaded artifact files
+        id: list-artifacts
+        run: |
+          echo "Kernel artifact files:" && ls -lh recipes/kernel/ && echo ''
+          echo "U-Boot artifact files:" && ls -lh recipes/u-boot/ && echo ''
+
+      - name: Build ${{ matrix.boards.name }} Image
+        id: do-build
+        working-directory: recipes
+        run: |
+          mkdir -p ../output
+          sudo /opt/src/gocode/bin/debos \
+            --disable-fakemachine \
+            --artifactdir ../output \
+            recipe-${{ inputs.board }}.yaml
+
+      - name: Upload artifacts
+        id: upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.artifact-name }}
+          path: output/**
+          retention-days: 90
+          if-no-files-found: error

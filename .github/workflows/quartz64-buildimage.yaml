@@ -105,27 +105,29 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
       - name: Download u-boot artifacts
+        id: download
         uses: actions/download-artifact@v3
         with:
           name: image-matrix
           path: matrix
-      - name: 'Echo download path'
-        run: echo ${{steps.download.outputs.download-path}}
+      - name: 'Print download path and contents'
+        run: |
+          echo ${{steps.download.outputs.download-path}}
+          ls -lh ${{steps.download.outputs.download-path}}
       - name: Merge matrixes
         id: matrix
         working-directory: matrix
         run: |
           matrix=$(jq -c -s . ./*.json)
-          echo "matrix=$matrix" >> $GITHUB_OUTPUT
-          echo "$matrix"
+          echo "matrix=$matrix" | tee -a $GITHUB_OUTPUT
 
-  build-image-dump:
-    name: Dump contexts
+  context-dump:
+    name: Dump workflow context
     runs-on: ubuntu-latest
     needs: [image-matrix]
-    # strategy:
-    #   fail-fast: false
-    #   matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
     steps:
       - name: Dump env context
         run: echo '${{ toJSON(env) }}'
@@ -140,17 +142,17 @@ jobs:
       - name: Dump needs context
         run: echo '${{ toJSON(needs) }}'
 
-  build-image-dump-reusable:
-    name: Dump contexts from reusable
+  reusable-context-dump:
+    name: Dump reusable workflow context
     needs: [build-kernel, image-matrix]
     uses: ./.github/workflows/dump-context.yaml
-    # strategy:
-    #   fail-fast: false
-    #   matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
     with:
-      board: ${{ matrix.board }}
+      board: ${{ matrix.board.name }}
       kernel: ${{ needs.build-kernel.outputs.artifact }}
-      firmware: u-boot-${{ matrix.board }}
+      firmware: ${{ matrix.board.firmware }}
 
   # build_image:
   #   if: inputs.build-u-boot && inputs.build-kernel
