@@ -1,4 +1,4 @@
-name: rockchip u-boot build
+name: zz rockchip u-boot build
 
 on:
   workflow_call:

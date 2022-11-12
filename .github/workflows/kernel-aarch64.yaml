@@ -1,4 +1,4 @@
-name: aarch64 kernel bindeb-pkg
+name: zz aarch64 kernel build
 run-name: kernel from ${{ inputs.source-repo }}@${{ inputs.source-ref }}
 
 on:
