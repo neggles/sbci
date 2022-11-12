@@ -1,4 +1,4 @@
-name: Quartz64 u-boot build
+name: rockchip u-boot build
 
 on:
   workflow_call:
@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: neggles/sbci-toolchains
-          ref: u-boot-quartz64
+          ref: u-boot-rockchip
           path: toolchain
 
       - name: Clone rkbin repository
