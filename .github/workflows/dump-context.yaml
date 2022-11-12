@@ -17,6 +17,11 @@ on:
         type: string
         required: true
         default: ''
+      extra:
+        type: string
+        description: "an extra thing to print"
+        required: false
+        default: ''
 
 jobs:
   dump-output:
@@ -35,3 +40,6 @@ jobs:
         run: echo '${{ toJSON(matrix) }}'
       - name: Dump needs context
         run: echo '${{ toJSON(needs) }}'
+      - name: Dump json object
+        if: ${{ inputs.extra != '' }}
+        run: echo '${{ inputs.extra }}'
