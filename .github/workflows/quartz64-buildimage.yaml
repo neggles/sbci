@@ -62,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: u-boot-configs
-          path: configs/u-boot/${{ env.board-soc }}
+          path: configs/u-boot/${{ env.board-soc }}/*
           retention-days: 7
           if-no-files-found: error
 

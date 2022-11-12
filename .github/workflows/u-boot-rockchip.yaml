@@ -82,7 +82,7 @@ jobs:
         id: build
         working-directory: u-boot
         run: |
-          cp -L ../configs/${{ inputs.board }}.config .config
+          cp -L ../configs/${{ inputs.config }} ./.config
           make oldconfig
           ./make.sh ${{ inputs.make-target }}
 
