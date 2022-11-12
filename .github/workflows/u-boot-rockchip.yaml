@@ -42,11 +42,18 @@ jobs:
       artifact: ${{ env.artifact-name }}
       fw-blob: ${{ env.fw-blob-name }}.gz
     steps:
-      - name: Install toolchain
+      - name: Install dependencies
         id: toolchain
         run: |
           sudo apt -y update
           sudo apt -y install build-essential crossbuild-essential-arm64 device-tree-compiler
+
+      - name: Download u-boot config
+        id: get-config
+        uses: actions/download-artifact@v3
+        with:
+          name: u-boot-configs
+          path: configs
 
       - name: Clone toolchain repository
         id: get-toolchain
@@ -70,13 +77,6 @@ jobs:
           repository: ${{ inputs.source-repo }}
           ref: ${{ inputs.source-ref }}
           path: u-boot
-
-      - name: Download u-boot config
-        id: get-config
-        uses: actions/download-artifact@v3
-        with:
-          name: u-boot-configs
-          path: configs
 
       - name: Build u-boot
         id: build
