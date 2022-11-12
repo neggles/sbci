@@ -24,6 +24,11 @@ on:
         required: true
         type: string
         default: "sbci-quartz64"
+      debug:
+        description: enable debug outputs
+        required: true
+        type: boolean
+        default: false
 
 defaults:
   run:
@@ -82,8 +87,10 @@ jobs:
       fail-fast: false
       matrix:
         board:
-          - { name: "soquartz-blade", config: "rk3566-quartz64", envfile: "", make-target: "" }
-          - { name: "soquartz-cm4", config: "rk3566-quartz64", envfile: "", make-target: "" }
+          [
+            { name: "soquartz-blade", config: "rk3566-quartz64", envfile: "", make-target: "" },
+            { name: "soquartz-cm4", config: "rk3566-quartz64", envfile: "", make-target: "" },
+          ]
     with:
       source-repo: neggles/u-boot-quartz64
       source-ref: ${{ inputs.u-boot-ref }}
@@ -92,13 +99,22 @@ jobs:
       envfile: ${{ matrix.board.envfile }}
       make-target: ${{ matrix.board.make-target }}
 
+  image-matrix:
+    name: Make image matrix
+    runs-on: ubuntu-latest
+
   dump-output:
+    name: Dump contexts
+    if: ${{ inputs.debug }}
     runs-on: ubuntu-latest
     needs: [build-u-boot, build-kernel]
     strategy:
       fail-fast: false
       matrix:
-        u-boot-output: ${{ needs.build-u-boot.outputs }}
+        u-boot-output:
+          - ${{ needs.build-u-boot.outputs }}
+        kernel-output:
+          - ${{ needs.build-kernel.outputs }}
     steps:
       - name: Dump env context
         run: echo '${{ toJSON(env) }}'

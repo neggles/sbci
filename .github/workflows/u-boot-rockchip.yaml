@@ -111,6 +111,7 @@ jobs:
             u-boot/${{ env.loader-bin }}
             u-boot/${{ env.u-boot-bin }}
             u-boot/*_spl_loader_*.bin
-            u-boot/${{ env.fw-blob-name }}.gz
+            u-boot/firmware-*
+            u-boot/u-boot*
           retention-days: ${{ env.artifact-days }}
           if-no-files-found: error
