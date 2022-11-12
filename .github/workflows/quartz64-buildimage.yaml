@@ -146,7 +146,7 @@ jobs:
     uses: ./.github/workflows/dump-context.yaml
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(jobs.image-matrix.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
     with:
       board: ${{ matrix.board }}
       kernel: ${{ needs.build-kernel.outputs.artifact }}
