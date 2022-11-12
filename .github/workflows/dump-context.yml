@@ -1,0 +1,37 @@
+name: zz Dump Context
+on:
+  workflow_call:
+    inputs:
+      board:
+        description: target board name
+        type: string
+        required: true
+        default: ''
+      kernel:
+        description: "kernel artifact"
+        type: string
+        required: true
+        default: ''
+      firmware:
+        description: "firmware image artifact"
+        type: string
+        required: true
+        default: ''
+
+jobs:
+  dump-output:
+    name: Dump contexts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump env context
+        run: echo '${{ toJSON(env) }}'
+      - name: Dump job context
+        run: echo '${{ toJSON(job) }}'
+      - name: Dump runner context
+        run: echo '${{ toJSON(runner) }}'
+      - name: Dump strategy context
+        run: echo '${{ toJSON(strategy) }}'
+      - name: Dump matrix context
+        run: echo '${{ toJSON(matrix) }}'
+      - name: Dump needs context
+        run: echo '${{ toJSON(needs) }}'

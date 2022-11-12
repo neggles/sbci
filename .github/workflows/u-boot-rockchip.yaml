@@ -130,7 +130,7 @@ jobs:
           matrix=$(echo '${{ toJSON(matrix) }}' | jq -c .)
           echo "$matrix" >> ${{ inputs.board }}.json
 
-      - name: Upload board matrix entry
+      - name: Upload matrix entry
         id: upload-matrix
         uses: actions/upload-artifact@v3
         with:

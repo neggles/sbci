@@ -24,18 +24,13 @@ on:
         required: true
         type: string
         default: "sbci-quartz64"
-      debug:
-        description: enable debug outputs
-        required: true
-        type: boolean
-        default: false
 
 defaults:
   run:
     shell: bash
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-k@${{ inputs.kernel-ref }}-b@${{ inputs.u-boot-ref }}
+  group: ${{ github.workflow }}-k@${{ inputs.kernel-ref }}-b@${{ inputs.u-boot-ref }}
   cancel-in-progress: true
 
 env:
@@ -114,18 +109,20 @@ jobs:
         with:
           name: image-matrix
           path: matrix
+      - name: 'Echo download path'
+        run: echo ${{steps.download.outputs.download-path}}
       - name: Merge matrixes
         id: matrix
         working-directory: matrix
         run: |
           matrix=$(jq -c -s . ./*.json)
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "$matrix"
 
-  dump-output:
+  build-image-dump:
     name: Dump contexts
-    if: ${{ inputs.debug }}
     runs-on: ubuntu-latest
-    needs: [build-u-boot, image-matrix]
+    needs: [image-matrix]
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
@@ -143,15 +140,17 @@ jobs:
       - name: Dump needs context
         run: echo '${{ toJSON(needs) }}'
 
-  # dump-output-reusable:
-  #   name: Dump contexts from reusable
-  #   needs: [build-u-boot]
-  #   uses: ./.github/workflows/dump-context.yaml
-  #   strategy:
-  #     fail-fast: false
-  #     matrix: ${{ fromJSON(jobs.image-matrix.outputs.matrix) }}
-  #   with:
-  #     board: ${{ matrix.u-boot. }}
+  build-image-dump-reusable:
+    name: Dump contexts from reusable
+    needs: [build-kernel, image-matrix]
+    uses: ./.github/workflows/dump-context.yaml
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(jobs.image-matrix.outputs.matrix) }}
+    with:
+      board: ${{ matrix.board }}
+      kernel: ${{ needs.build-kernel.outputs.artifact }}
+      firmware: u-boot-${{ matrix.board }}
 
   # build_image:
   #   if: inputs.build-u-boot && inputs.build-kernel
