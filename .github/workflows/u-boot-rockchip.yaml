@@ -98,7 +98,7 @@ jobs:
         id: blorb
         working-directory: u-boot
         run: |
-          fallocate -16m ${{ env.fw-blob-name }}
+          fallocate -l 16m ${{ env.fw-blob-name }}
           dd if=${{ env.loader-bin }} of=${{ env.fw-blob-name }} conv=notrunc bs=32K seek=1
           dd if=${{ env.u-boot-bin }} of=${{ env.fw-blob-name }} conv=notrunc bs=32K seek=32
           gzip ${{ env.fw-blob-name }}
