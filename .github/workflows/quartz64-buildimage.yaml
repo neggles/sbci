@@ -119,7 +119,9 @@ jobs:
         id: merge
         working-directory: matrix
         run: |
-          jq -c -s '{"include": . } | @json "matrix=\(.)"' ./*.json
+          matrix=$(jq -c -s '{"include": . }' ./*.json)
+          echo "matrix=${matrix}"
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
 
   build-image:
     name: Build image
