@@ -120,7 +120,8 @@ jobs:
         working-directory: matrix
         run: |
           matrix=$(jq -c -s '{"include": .}' ./*.json)
-          echo "matrix=${matrix}" | tee -a $GITHUB_OUTPUT
+          echo "matrix=${matrix//'%'/'%25'}"
+          echo -n "matrix=${matrix//'%'/'%25'}" >> $GITHUB_OUTPUT
 
   build-image:
     name: Build image
@@ -128,7 +129,7 @@ jobs:
     uses: ./.github/workflows/dump-context.yaml
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
+      matrix: ${{fromJSON(needs.image-matrix.outputs.matrix)}}
     with:
       board: ${{ matrix.board.name }}
       firmware: ${{ matrix.board.firmware }}
