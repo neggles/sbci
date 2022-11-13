@@ -110,16 +110,17 @@ jobs:
         with:
           name: image-matrix
           path: matrix
-      - name: 'Print download path and contents'
+      - name: 'List downloaded artifacts'
+        id: list
         run: |
           echo ${{steps.download.outputs.download-path}}
           ls -lh ${{steps.download.outputs.download-path}}
       - name: Merge matrixes
-        id: matrix
+        id: merge
         working-directory: matrix
         run: |
-          matrix=$(jq -c -s . ./*.json)
-          echo "matrix={\"include\":$matrix\"}" | tee -a $GITHUB_OUTPUT
+          matrix=$(jq -c -s '{"include": .}' ./*.json)
+          echo "matrix=${matrix}" | tee -a $GITHUB_OUTPUT
 
   build-image:
     name: Build image
@@ -130,8 +131,8 @@ jobs:
       matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
     with:
       board: ${{ matrix.board.name }}
-      kernel: ${{ needs.build-kernel.outputs.artifact }}
       firmware: ${{ matrix.board.firmware }}
+      kernel: ${{ needs.build-kernel.outputs.artifact }}
 
   # build_image:
   #   if: inputs.build-u-boot && inputs.build-kernel
