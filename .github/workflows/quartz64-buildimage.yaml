@@ -119,31 +119,10 @@ jobs:
         working-directory: matrix
         run: |
           matrix=$(jq -c -s . ./*.json)
-          echo "matrix=$matrix" | tee -a $GITHUB_OUTPUT
+          echo "matrix={\"include\":$matrix\"}" | tee -a $GITHUB_OUTPUT
 
-  context-dump:
-    name: Dump workflow context
-    runs-on: ubuntu-latest
-    needs: [image-matrix]
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.image-matrix.outputs.matrix) }}
-    steps:
-      - name: Dump env context
-        run: echo '${{ toJSON(env) }}'
-      - name: Dump job context
-        run: echo '${{ toJSON(job) }}'
-      - name: Dump runner context
-        run: echo '${{ toJSON(runner) }}'
-      - name: Dump strategy context
-        run: echo '${{ toJSON(strategy) }}'
-      - name: Dump matrix context
-        run: echo '${{ toJSON(matrix) }}'
-      - name: Dump needs context
-        run: echo '${{ toJSON(needs) }}'
-
-  reusable-context-dump:
-    name: Dump reusable workflow context
+  build-image:
+    name: Build image
     needs: [build-kernel, image-matrix]
     uses: ./.github/workflows/dump-context.yaml
     strategy:
