@@ -1,0 +1,167 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $soc := or .soc "rk3566" -}}
+{{- $board := or .board "noboard" -}}
+{{- $firmware := or .firmware (printf "firmware-%s" $board) -}}
+{{- $devicetree := or .devicetree (printf "%s-%s.dtb" $soc $board) -}}
+{{- $suite := or .suite "bookworm" -}}
+{{- $mirror := or .mirror "https://deb.debian.org/debian" -}}
+{{- $hostname := or .hostname $board -}}
+{{- $image := or .image (printf "debiant-%s-%s-%s.img" $suite $architecture $board) -}}
+
+architecture: arm64
+
+actions:
+  - action: debootstrap
+    suite: {{ $suite }}
+    components:
+      - main
+      - contrib
+      - non-free
+    mirror: {{ $mirror }}
+    variant: minbase
+
+  - action: apt
+    description: Install apt-transport-https and dependencies
+    packages:
+      - ca-certificates
+      - apt-transport-https
+      - curl
+      - wget
+      - gnupg
+      - apt-utils
+      - lsb-release
+
+  - action: apt
+    description: Install base system packages
+    packages:
+      - sudo
+      - adduser
+      - systemd
+      - systemd-sysv
+      - udev
+      - kmod
+      - locales
+      - dbus-user-session
+      - u-boot-menu
+      - u-boot-tools
+      - vim-tiny
+
+  - action: apt
+    description: Install misc. utilities
+    packages:
+      - parted
+      - util-linux
+      - dosfstools
+      - bash-completion
+      - xz-utils
+      - zstd
+      - wget
+      - file
+
+
+  - action: apt
+    description: Install networking packages
+    packages:
+      - bluetooth
+      - netbase
+      - net-tools
+      - iproute2
+      - libnss-resolve
+      - task-ssh-server
+      - netplan.io
+      - chrony
+      - isc-dhcp-client
+
+  - action: apt
+    description: Install wireless networking packages
+    packages:
+      - bluez-firmware
+      - firmware-brcm80211
+      - wireless-regdb
+      - wireless-tools
+      - wpasupplicant
+      - iw
+
+  - action: overlay
+    description: Copy kernel package
+    source: kernel
+    destination: /usr/local/kernel
+
+  - action: run
+    description: Install kernel package
+    chroot: true
+    command: |
+      rm /usr/local/kernel/*-dbg_*.deb
+      DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt -yq install /usr/local/kernel/*.deb
+
+  - action: overlay
+    description: Copy u-boot files
+    source: u-boot/
+    destination: /boot/firmware
+
+  - action: run
+    description: U-Boot menu update
+    chroot: true
+    script: scripts/setup-u-boot.sh {{ $soc }}-{{ $board }}
+
+  - action: run
+    description: Set up user
+    chroot: true
+    script: scripts/setup-user.sh
+
+  - action: overlay
+    description: Add network configuration
+    source: overlays/networkd
+
+  - action: run
+    description: Set up networking
+    chroot: true
+    script: |
+      echo '{{ $hostname }}' > /etc/hostname
+      scripts/setup-networking.sh
+
+  - action: run
+    description: Clear machine-id
+    chroot: true
+    command: rm -f /etc/machine-id /var/lib/dbus/machine-id
+
+  - action: image-partition
+    description: Creating image partitions
+    imagename: {{ $image }}
+    imagesize: 4GB
+    partitiontype: gpt
+    mountpoints:
+      - mountpoint: /
+        partition: root
+        options: discard,noatime
+    partitions:
+      - name: firmware
+        partlabel: firmware
+        fs: none
+        start: 64s
+        end: 16MiB
+      - name: rootfs
+        partlabel: rootfs
+        fs: ext4
+        start: 16MiB
+        end: 100%
+        flags: [ boot ]
+
+  - action: filesystem-deploy
+    description: Deploying filesystem onto image
+
+  - action: raw
+    description: Deploy firmware and u-boot
+    origin: recipe
+    source: u-boot/{{ $firmware }}
+    partition: firmware
+
+  - action: run
+    description: Create block map file
+    postprocess: true
+    command: bmaptool create {{ $image }} > {{ $image }}.bmap
+
+  - action: run
+    description: Compress final image
+    postprocess: true
+    command: tar -I 'zstd -T0 -11 --long' -cf {{ $image }}.zst {{ $image }} {{ $image }}.bmap

@@ -126,22 +126,12 @@ jobs:
   build-image:
     name: Build image
     needs: [build-kernel, image-matrix]
-    uses: ./.github/workflows/dump-context.yaml
+    uses: ./.github/workflows/debian-image.yaml
     strategy:
       fail-fast: false
       matrix: ${{fromJSON(needs.image-matrix.outputs.matrix)}}
     with:
-      board: ${{ matrix.board.name }}
-      firmware: ${{ matrix.board.firmware }}
+      board: ${{ matrix.name }}
+      firmware: ${{ matrix.firmware }}
       kernel: ${{ needs.build-kernel.outputs.artifact }}
-
-  # build_image:
-  #   if: inputs.build-u-boot && inputs.build-kernel
-  #   needs: [build-u-boot, build-kernel]
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       boards: [
-  #           { name: "SOQuartz Blade",  }
-  #         ]
+      suite: "bookworm"

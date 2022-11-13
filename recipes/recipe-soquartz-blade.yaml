@@ -1,0 +1,17 @@
+{{- $board := or .board "soquartz-blade" -}}
+{{- $soc := or .soc "rk3566" -}}
+{{- $firmware := or .firmware (printf "firmware-%s" $board) -}}
+{{- $devicetree := or .devicetree (printf "%s-%s.dtb" $soc $board) -}}
+{{- $suite := or .suite "bookworm" -}}
+
+architecture: "arm64"
+
+actions:
+  - action: recipe
+    recipe: "debian-quartz64.yaml"
+    variables:
+      board: {{ $board }}
+      soc: {{ $soc }}
+      firmware: {{ $firmware }}
+      devicetree: {{ $devicetree }}
+      suite: {{ $suite }}

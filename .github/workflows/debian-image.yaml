@@ -41,7 +41,7 @@ jobs:
         run: |
           sudo apt-get -yq update && sudo apt-get -yq upgrade
           sudo apt-get -yq golang git libglib2.0-dev libostree-dev \
-            qemu-system-x86 qemu-user-static debootstrap systemd-container
+            qemu-system-arm qemu-user-static debootstrap systemd-container
 
       - name: install debos
         id: install-debos
@@ -63,10 +63,15 @@ jobs:
         id: get-blorbs
         uses: actions/download-artifact@v3
         with:
-          name: ${{ inputs.firmware }}
+          name: u-boot-${{ inputs.board }}
           path: recipes/u-boot/
 
-      - name: List downloaded artifact files
+      - name: Extract firmware .gz
+        id: decompress-firmware
+        working-directory: recipes/u-boot/
+        run: gzip -d firmware-*.gz
+
+      - name: List downloaded files
         id: list-artifacts
         run: |
           echo "Kernel artifact files:" && ls -lh recipes/kernel/ && echo ''
@@ -77,9 +82,10 @@ jobs:
         working-directory: recipes
         run: |
           mkdir -p ../output
-          sudo /opt/src/gocode/bin/debos \
-            --disable-fakemachine \
+          sudo /opt/src/gocode/bin/debos --disable-fakemachine \
             --artifactdir ../output \
+            -t suite:${{ inputs.suite }} \
+            -t firmware:${{ inputs.firmware }} \
             recipe-${{ inputs.board }}.yaml
 
       - name: Upload artifacts
@@ -87,6 +93,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifact-name }}
-          path: output/**
+          path: output/*
           retention-days: 90
           if-no-files-found: error
