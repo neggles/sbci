@@ -18,7 +18,6 @@ actions:
       - contrib
       - non-free
     mirror: {{ $mirror }}
-    variant: minbase
 
   - action: apt
     description: Install apt-transport-https and dependencies
@@ -28,27 +27,16 @@ actions:
       - curl
       - wget
       - gnupg
-      - apt-utils
       - lsb-release
 
   - action: apt
     description: Install base system packages
     packages:
       - sudo
-      - adduser
-      - systemd
-      - systemd-sysv
-      - udev
-      - kmod
       - locales
       - dbus-user-session
       - u-boot-menu
       - u-boot-tools
-      - vim-tiny
-
-  - action: apt
-    description: Install misc. utilities
-    packages:
       - parted
       - util-linux
       - dosfstools
@@ -58,19 +46,16 @@ actions:
       - wget
       - file
 
-
   - action: apt
     description: Install networking packages
     packages:
       - bluetooth
       - netbase
       - net-tools
-      - iproute2
       - libnss-resolve
       - task-ssh-server
       - netplan.io
       - chrony
-      - isc-dhcp-client
 
   - action: apt
     description: Install wireless networking packages
