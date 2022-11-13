@@ -38,8 +38,8 @@ jobs:
         run: echo '${{ toJSON(strategy) }}'
       - name: Dump matrix context
         run: echo '${{ toJSON(matrix) }}'
-      - name: Dump needs context
-        run: echo '${{ toJSON(needs) }}'
-      - name: Dump json object
+      - name: Dump inputs context
+        run: echo '${{ toJSON(inputs) }}'
+      - name: Dump json object (if present)
         if: ${{ inputs.extra != '' }}
         run: echo '${{ inputs.extra }}'
