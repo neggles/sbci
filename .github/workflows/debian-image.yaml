@@ -31,6 +31,7 @@ defaults:
 
 env:
   artifact-name: debiant-${{ inputs.suite }}-${{ inputs.board }}
+  GOPATH: /opt/go
 
 jobs:
   build:
@@ -48,13 +49,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get -yq update && sudo apt-get -yq upgrade
-          sudo apt-get -yq install git libglib2.0-dev libostree-dev \
+          sudo apt-get -yq install git golang libglib2.0-dev libostree-dev \
             qemu-system-arm qemu-user-static debootstrap systemd-container
-
-      - name: Set up golang
-        uses: actions/setup-go@v3
-        with:
-          go-version: '>=1.19.0'
 
       - name: Download kernel artifact
         id: get-kernel
