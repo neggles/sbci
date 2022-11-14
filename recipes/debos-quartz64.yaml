@@ -67,6 +67,13 @@ actions:
       - wpasupplicant
       - iw
 
+  - action: run
+    description: Install 'standard system utilities'
+    chroot: true
+    command: |
+      apt-get install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
+      apt-get install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/standard$/ {printf "%s ", $1}')
+
   - action: overlay
     description: Copy kernel package
     source: kernel
