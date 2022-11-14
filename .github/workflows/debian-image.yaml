@@ -34,23 +34,31 @@ jobs:
     outputs:
       artifact: ${{ env.artifact-name }}
     steps:
-      - name: Install toolchain
-        id: toolchain
+      - name: Clone repo
+        id: clone
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        id: deps
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get -yq update && sudo apt-get -yq upgrade
-          sudo apt-get -yq install golang git libglib2.0-dev libostree-dev \
+          sudo apt-get -yq install git libglib2.0-dev libostree-dev \
             qemu-system-arm qemu-user-static debootstrap systemd-container
+
+      - name: Set up golang
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.19.0'
 
       - name: install debos
         id: install-debos
         run: |
-          go install -v github.com/go-debos/debos/cmd/debos@latest
-
-      - name: Clone repo
-        id: clone
-        uses: actions/checkout@v3
+          source scripts/ci_helpers.sh
+          info "GOPATH=${GOPATH}"
+          info "PATH=${PATH}"
+          sudo go install -v github.com/go-debos/debos/cmd/debos@latest
 
       - name: Download kernel artifact
         id: get-kernel
@@ -81,9 +89,10 @@ jobs:
         id: do-build
         working-directory: recipes
         run: |
+          source scripts/ci_helpers.sh
           mkdir -p ../output
-          sudo /opt/src/gocode/bin/debos --disable-fakemachine \
-            --artifactdir ../output \
+          info "debos=$(which debos)"
+          sudo $(which debos) --disable-fakemachine --artifactdir ../output \
             -t suite:${{ inputs.suite }} \
             -t firmware:${{ inputs.firmware }} \
             recipe-${{ inputs.board }}.yaml
