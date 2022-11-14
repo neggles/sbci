@@ -37,6 +37,10 @@ on:
         description: "firmware blob name"
         value: ${{ jobs.build.outputs.fw-blob }}
 
+defaults:
+  run:
+    shell: bash
+
 env:
   loader-bin: idblock.bin
   u-boot-bin: uboot.img
