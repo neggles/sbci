@@ -55,7 +55,7 @@ jobs:
       - name: install debos
         id: install-debos
         run: |
-          source scripts/ci_helpers.sh
+          source ${GITHUB_WORKSPACE}/scripts/ci_helpers.sh
           info "GOPATH=${GOPATH}"
           info "PATH=${PATH}"
           sudo go install -v github.com/go-debos/debos/cmd/debos@latest
@@ -89,7 +89,7 @@ jobs:
         id: do-build
         working-directory: recipes
         run: |
-          source scripts/ci_helpers.sh
+          source ${GITHUB_WORKSPACE}/scripts/ci_helpers.sh
           mkdir -p ../output
           info "debos=$(which debos)"
           sudo $(which debos) --disable-fakemachine --artifactdir ../output \
