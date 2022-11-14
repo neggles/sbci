@@ -132,7 +132,7 @@ actions:
         fs: none
         start: 64s
         end: 16MiB
-      - name: rootfs
+      - name: root
         partlabel: rootfs
         fs: ext4
         start: 16MiB
