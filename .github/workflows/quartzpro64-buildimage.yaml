@@ -1,0 +1,136 @@
+name: QuartzPro64 image build
+run-name: QuartzPro64 image build (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      build-kernel:
+        description: Build kernel package
+        required: true
+        default: true
+        type: boolean
+      build-u-boot:
+        description: Build u-boot package
+        required: true
+        default: true
+        type: boolean
+      kernel-ref:
+        description: Kernel source ref
+        required: true
+        type: string
+        default: "sbci-quartzpro64"
+      u-boot-ref:
+        description: u-boot source ref
+        required: true
+        type: string
+        default: "sbci-quartzpro64"
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-k@${{ inputs.kernel-ref }}-b@${{ inputs.u-boot-ref }}
+  cancel-in-progress: true
+
+env:
+  board-soc: rk3588
+  kernel-config: rk3588.config
+  u-boot-config: rk3588-quartzpro64.config
+  build-image: ${{ inputs.build-kernel && inputs.build-u-boot }}
+
+jobs:
+  upload-config:
+    name: Prepare board configs
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Clone workflow repo
+        uses: actions/checkout@v3
+
+      - name: Copy kernel config
+        run: |
+          cp -L ./configs/kernel/${{ env.kernel-config }} ./kernel.config
+
+      - name: Upload kernel config
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-config
+          path: kernel.config
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload u-boot configs
+        uses: actions/upload-artifact@v3
+        with:
+          name: u-boot-configs
+          path: configs/u-boot/${{ env.board-soc }}/*
+          retention-days: 7
+          if-no-files-found: error
+
+  build-kernel:
+    name: Build kernel
+    if: inputs.build-kernel
+    needs: upload-config
+    uses: ./.github/workflows/kernel-aarch64.yaml
+    with:
+      source-repo: neggles/linux-quartz64
+      source-ref: ${{ inputs.kernel-ref }}
+
+  build-u-boot:
+    name: Build u-boot
+    if: inputs.build-u-boot
+    needs: upload-config
+    uses: ./.github/workflows/u-boot-rockchip.yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          [
+            { name: "quartzpro64", config: "rk3588-quartzpro64", envfile: "", make-target: "" },
+          ]
+    with:
+      source-repo: neggles/u-boot-quartz64
+      source-ref: ${{ inputs.u-boot-ref }}
+      board: ${{ matrix.board.name }}
+      config: ${{ matrix.board.config }}
+      envfile: ${{ matrix.board.envfile }}
+      make-target: ${{ matrix.board.make-target }}
+
+  image-matrix:
+    name: Generate image matrix
+    runs-on: ubuntu-latest
+    needs: [build-u-boot]
+    outputs:
+      matrix: ${{ steps.merge.outputs.matrix }}
+    steps:
+      - name: Download u-boot artifacts
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          name: image-matrix
+          path: matrix
+      - name: 'List downloaded artifacts'
+        id: list
+        run: |
+          echo ${{steps.download.outputs.download-path}}
+          ls -lh ${{steps.download.outputs.download-path}}
+      - name: Merge matrixes
+        id: merge
+        working-directory: matrix
+        run: |
+          matrix=$(jq -c -s '{"include": . }' ./*.json)
+          echo "matrix=${matrix}"
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+
+  build-image:
+    name: Build image
+    needs: [build-kernel, image-matrix]
+    uses: ./.github/workflows/debian-image.yaml
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJSON(needs.image-matrix.outputs.matrix)}}
+    with:
+      board: ${{ matrix.name }}
+      firmware: ${{ matrix.firmware }}
+      kernel: ${{ needs.build-kernel.outputs.artifact }}
+      suite: "bookworm"
