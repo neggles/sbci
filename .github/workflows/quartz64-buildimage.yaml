@@ -1,5 +1,5 @@
-name: Quartz64 Image Build
-run-name: Quartz64 image build (${{ github.event_name }})
+name: Quartz64 Image
+run-name: Quartz64 build (${{ github.event_name }})
 
 on:
   workflow_dispatch:
