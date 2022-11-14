@@ -1,5 +1,8 @@
 # sbci[^1]
 
+[![Quartz64 Image](https://github.com/neggles/sbci/actions/workflows/quartz64-buildimage.yaml/badge.svg)](https://github.com/neggles/sbci/actions/workflows/quartz64-buildimage.yaml)
+[![QuartzPro64 Image](https://github.com/neggles/sbci/actions/workflows/quartzpro64-buildimage.yaml/badge.svg)](https://github.com/neggles/sbci/actions/workflows/quartzpro64-buildimage.yaml)
+
 ### ⚠️❗ work-in-progress! do not expect this to work (yet) ❗⚠️
 [^1]: single board continuous integration 😅
 
