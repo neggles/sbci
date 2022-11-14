@@ -40,7 +40,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get -yq update && sudo apt-get -yq upgrade
-          sudo apt-get -yq golang git libglib2.0-dev libostree-dev \
+          sudo apt-get -yq install golang git libglib2.0-dev libostree-dev \
             qemu-system-arm qemu-user-static debootstrap systemd-container
 
       - name: install debos
