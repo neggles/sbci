@@ -25,6 +25,10 @@ on:
         description: image artifact name
         value: ${{ jobs.build.outputs.artifact }}
 
+defaults:
+  run:
+    shell: bash
+
 env:
   artifact-name: debiant-${{ inputs.suite }}-${{ inputs.board }}
 
@@ -52,14 +56,6 @@ jobs:
         with:
           go-version: '>=1.19.0'
 
-      - name: install debos
-        id: install-debos
-        run: |
-          source ${GITHUB_WORKSPACE}/scripts/ci_helpers.sh
-          info "GOPATH=${GOPATH}"
-          info "PATH=${PATH}"
-          sudo go install -v github.com/go-debos/debos/cmd/debos@latest
-
       - name: Download kernel artifact
         id: get-kernel
         uses: actions/download-artifact@v3
@@ -73,6 +69,15 @@ jobs:
         with:
           name: u-boot-${{ inputs.board }}
           path: recipes/u-boot/
+
+      - name: install debos
+        id: install-debos
+        run: |
+          source ${GITHUB_WORKSPACE}/scripts/ci_helpers.sh
+          info "GOPATH=${GOPATH}"
+          info "PATH=${PATH}"
+          sudo GOPATH="${GOPATH}" go install -v github.com/go-debos/debos/cmd/debos@latest
+          info "Contents of GOPATH/bin: $(ls -l ${GOPATH}/bin)"
 
       - name: Extract firmware .gz
         id: decompress-firmware
@@ -88,11 +93,12 @@ jobs:
       - name: Build ${{ matrix.boards.name }} Image
         id: do-build
         working-directory: recipes
+
         run: |
           source ${GITHUB_WORKSPACE}/scripts/ci_helpers.sh
           mkdir -p ../output
-          info "debos=$(which debos)"
-          sudo $(which debos) --disable-fakemachine --artifactdir ../output \
+          info "GOPATH=${GOPATH}"
+          sudo ${GOPATH}/bin/debos --disable-fakemachine --artifactdir ../output \
             -t suite:${{ inputs.suite }} \
             -t firmware:${{ inputs.firmware }} \
             recipe-${{ inputs.board }}.yaml
