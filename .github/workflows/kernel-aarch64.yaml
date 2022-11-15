@@ -28,7 +28,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: [self-hosted, linux, x64, debian]
+    runs-on: [self-hosted, linux, x64, debian, nonpriv]
     outputs:
       kernelrelease: ${{ steps.build.outputs.kernelrelease }}
     steps:
