@@ -92,7 +92,7 @@ actions:
 
   - action: overlay
     description: Copy u-boot files
-    source: u-boot/
+    source: u-boot
     destination: /boot/firmware
 
   - action: run
@@ -106,13 +106,14 @@ actions:
     script: scripts/setup-user.sh {{ $username }} {{ $password }}
 
   - action: overlay
-    description: Add network configuration
-    source: overlays/networkd
+    description: Add configuration files
+    source: rootfs
+    destination: /boot
 
   - action: run
     description: Set up networking
     chroot: true
-    script: |
+    command: |
       echo '{{ $hostname }}' > /etc/hostname
       scripts/setup-networking.sh
 

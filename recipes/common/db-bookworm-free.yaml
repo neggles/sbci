@@ -1,0 +1,61 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $suite := or .suite "bookworm" -}}
+{{- $mirror := or .mirror "https://deb.debian.org/debian" -}}
+
+architecture: {{ $architecture }}
+actions:
+  - action: debootstrap
+    suite: {{ $suite }}
+    components:
+      - main
+      - contrib
+      - non-free
+      - non-free-firmware
+    mirror: {{ $mirror }}
+
+  - action: apt
+    description: Install apt-transport-https and dependencies
+    packages:
+      - ca-certificates
+      - apt-transport-https
+      - curl
+      - wget
+      - gnupg
+      - lsb-release
+
+  - action: apt
+    description: Install base system packages
+    packages:
+      - sudo
+      - locales
+      - dbus-user-session
+      - u-boot-menu
+      - u-boot-tools
+      - parted
+      - util-linux
+      - dosfstools
+      - bash-completion
+      - xz-utils
+      - zstd
+      - wget
+      - file
+
+  - action: apt
+    description: Install networking packages
+    packages:
+      - bluetooth
+      - netbase
+      - net-tools
+      - libnss-resolve
+      - task-ssh-server
+      - netplan.io
+
+  - action: apt
+    description: Install wireless networking packages
+    packages:
+      - bluez-firmware
+      - firmware-brcm80211
+      - wireless-regdb
+      - wireless-tools
+      - wpasupplicant
+      - iw
