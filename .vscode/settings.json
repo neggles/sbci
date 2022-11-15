@@ -2,7 +2,8 @@
     "files.associations": {
         "*.yaml": "yaml",
         "debos*.yaml": "jinja-yaml",
-        "recipe*.yaml": "jinja-yaml"
+        "recipe*.yaml": "jinja-yaml",
+        "recipes/**/*.yaml": "jinja-yaml"
     },
     "editor.detectIndentation": false,
     "editor.insertSpaces": true,
