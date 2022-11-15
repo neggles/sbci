@@ -8,7 +8,7 @@
 {{- $hostname := or .hostname $board -}}
 {{- $image := or .image (printf "debiant-%s-%s-%s.img" $suite $architecture $board) -}}
 
-architecture: arm64
+architecture: {{ $architecture }}
 
 actions:
   - action: debootstrap
@@ -17,6 +17,7 @@ actions:
       - main
       - contrib
       - non-free
+      - non-free-firmware
     mirror: {{ $mirror }}
 
   - action: apt
