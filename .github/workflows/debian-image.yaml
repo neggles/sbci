@@ -49,8 +49,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get -yq update && sudo apt-get -yq upgrade
-          sudo apt-get -yq install git golang libglib2.0-dev libostree-dev \
-            qemu-system-arm qemu-user-static debootstrap systemd-container
+          sudo apt-get -yq install git golang libglib2.0-dev libostree-dev debootstrap \
+            qemu-system-arm qemu-system-x86 qemu-user-static systemd-container
 
       - name: Download kernel artifact
         id: get-kernel
