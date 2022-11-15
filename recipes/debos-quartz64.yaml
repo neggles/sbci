@@ -3,9 +3,12 @@
 {{- $board := or .board "noboard" -}}
 {{- $firmware := or .firmware (printf "firmware-%s" $board) -}}
 {{- $devicetree := or .devicetree (printf "%s-%s.dtb" $soc $board) -}}
+
 {{- $suite := or .suite "bookworm" -}}
 {{- $mirror := or .mirror "https://deb.debian.org/debian" -}}
 {{- $hostname := or .hostname $board -}}
+{{- $username := or .username "debiant" -}}
+{{- $password := or .password "debiant" -}}
 {{- $image := or .image (printf "debiant-%s-%s-%s.img" $suite $architecture $board) -}}
 
 architecture: {{ $architecture }}
@@ -100,7 +103,7 @@ actions:
   - action: run
     description: Set up user
     chroot: true
-    script: scripts/setup-user.sh
+    script: scripts/setup-user.sh {{ $username }} {{ $password }}
 
   - action: overlay
     description: Add network configuration
