@@ -140,12 +140,11 @@ actions:
         options: ["discard", "noatime"]
     partitions:
       - name: firmware
-        partlabel: firmware
         fs: none
         start: 64s
         end: 24MiB
       - name: recovery
-        partlabel: recovery
+        partlabel: RECOVERY
         fs: fat32
         start: 24MiB
         end: 320MiB
@@ -163,7 +162,7 @@ actions:
   - action: raw
     description: Deploy firmware and u-boot
     origin: recipe
-    source: u-boot/{{ $firmware }}
+    source: u-boot/{{ $firmware }}.bin
     partition: firmware
 
   - action: run
