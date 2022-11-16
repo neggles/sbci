@@ -18,6 +18,3 @@ EOF
 systemctl enable systemd-networkd
 # DNS resolving
 systemctl enable systemd-resolved
-
-# netplan (if installed)
-command -v netplan && netplan apply || true
