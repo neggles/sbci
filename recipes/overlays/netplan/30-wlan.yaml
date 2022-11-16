@@ -1,12 +1,12 @@
 # To enable wireless networking, uncomment the "access-points" lines below,
 # replace with your network's details, and run `netplan apply`
-network:
-  version: 2
-  wifis:
-    wlan0:
-      dhcp4: yes
-      dhcp6: yes
-      dhcp-identifier: mac
+# network:
+#   version: 2
+#   wifis:
+#     wlan0:
+#       dhcp4: yes
+#       dhcp6: yes
+#       dhcp-identifier: mac
 #       access-points:
 #         "network_ssid_name":
 #             password: "**********"
