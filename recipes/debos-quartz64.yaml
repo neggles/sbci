@@ -98,12 +98,12 @@ actions:
   - action: run
     description: U-Boot menu update
     chroot: true
-    script: scripts/setup-u-boot.sh {{ $soc }}-{{ $board }}
+    script: scripts/setup-u-boot.sh '{{ $devicetree }}'
 
   - action: run
     description: Set up user
     chroot: true
-    script: scripts/setup-user.sh {{ $username }} {{ $password }}
+    script: scripts/setup-user.sh '{{ $username }}' '{{ $password }}'
 
   - action: overlay
     description: Add configuration files
@@ -113,9 +113,7 @@ actions:
   - action: run
     description: Set up networking
     chroot: true
-    command: |
-      echo '{{ $hostname }}' > /etc/hostname
-      scripts/setup-networking.sh
+    script: scripts/setup-networking.sh '{{ $hostname }}'
 
   - action: run
     description: Clear machine-id
