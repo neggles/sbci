@@ -2,7 +2,7 @@
 {{- $soc := or .soc "rk3566" -}}
 {{- $board := or .board "noboard" -}}
 {{- $firmware := or .firmware (printf "firmware-%s" $board) -}}
-{{- $devicetree := or .devicetree (printf "%s-%s.dtb" $soc $board) -}}
+{{- $devicetree := or .devicetree (printf "rockchip/%s-%s.dtb" $soc $board) -}}
 
 {{- $suite := or .suite "bookworm" -}}
 {{- $mirror := or .mirror "https://deb.debian.org/debian" -}}
@@ -33,12 +33,17 @@ actions:
       - gnupg
       - lsb-release
 
+  - action: run
+    description: Install standard system utilities
+    chroot: true
+    command: |
+      apt-get install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
+      apt-get install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/standard$/ {printf "%s ", $1}')
+
   - action: apt
-    description: Install base system packages
+    description: Install additional utilities
     packages:
       - sudo
-      - locales
-      - dbus-user-session
       - u-boot-menu
       - u-boot-tools
       - parted
@@ -47,8 +52,6 @@ actions:
       - bash-completion
       - xz-utils
       - zstd
-      - wget
-      - file
 
   - action: apt
     description: Install networking packages
@@ -59,7 +62,6 @@ actions:
       - libnss-resolve
       - task-ssh-server
       - netplan.io
-      - chrony
 
   - action: apt
     description: Install wireless networking packages
@@ -70,13 +72,6 @@ actions:
       - wireless-tools
       - wpasupplicant
       - iw
-
-  - action: run
-    description: Install 'standard system utilities'
-    chroot: true
-    command: |
-      apt-get install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
-      apt-get install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/standard$/ {printf "%s ", $1}')
 
   - action: overlay
     description: Copy kernel package
@@ -89,6 +84,7 @@ actions:
     command: |
       rm /usr/local/kernel/*-dbg_*.deb
       DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt -yq install /usr/local/kernel/*.deb
+      rm -fr /usr/local/kernel
 
   - action: overlay
     description: Copy u-boot files
@@ -98,7 +94,7 @@ actions:
   - action: run
     description: U-Boot menu update
     chroot: true
-    script: scripts/setup-u-boot.sh '{{ $devicetree }}'
+    script: scripts/setup-u-boot.sh '{{ $devicetree }}' arm64
 
   - action: run
     description: Set up user
@@ -106,14 +102,24 @@ actions:
     script: scripts/setup-user.sh '{{ $username }}' '{{ $password }}'
 
   - action: overlay
-    description: Add configuration files
-    source: rootfs
-    destination: /boot
+    description: Add network configuration
+    source: overlays/netplan
+    destination: /etc/netplan
 
   - action: run
     description: Set up networking
     chroot: true
     script: scripts/setup-networking.sh '{{ $hostname }}'
+
+  - action: overlay
+    description: Add systemd-repart configuration
+    source: overlays/repart.d
+    destination: /etc/repart.d
+
+  - action: overlay
+    description: Add systemd config files
+    source: overlays/systemd
+    destination: /etc/systemd
 
   - action: run
     description: Clear machine-id
@@ -123,24 +129,33 @@ actions:
   - action: image-partition
     description: Creating image partitions
     imagename: {{ $image }}
-    imagesize: 4GB
+    imagesize: 4GiB
     partitiontype: gpt
     mountpoints:
       - mountpoint: /
         partition: root
-        options: discard,noatime
+        options: ["discard", "noatime", "x-systemd.growfs"]
+      - mountpoint: /boot/recovery
+        partition: recovery
+        options: ["discard", "noatime"]
     partitions:
       - name: firmware
         partlabel: firmware
         fs: none
         start: 64s
-        end: 16MiB
+        end: 24MiB
+      - name: recovery
+        partlabel: recovery
+        fs: fat32
+        start: 24MiB
+        end: 320MiB
       - name: root
         partlabel: rootfs
         fs: ext4
-        start: 16MiB
+        start: 320MiB
         end: 100%
         flags: [ boot ]
+        parttype: "b921b045-1df0-41c3-af44-4c6f280d3fae" # aarch64 rootfs
 
   - action: filesystem-deploy
     description: Deploying filesystem onto image

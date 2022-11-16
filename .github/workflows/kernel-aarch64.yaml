@@ -67,6 +67,7 @@ jobs:
         working-directory: linux
         run: |
           make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg
+          make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- tar-pkg
           echo "kernelrelease=$(make -s kernelrelease)" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
@@ -76,5 +77,6 @@ jobs:
           name: linux-${{ steps.build.outputs.kernelrelease }}
           path: |
             linux-*.deb
+            linux/*.tar*
           retention-days: 30
           if-no-files-found: error

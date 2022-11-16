@@ -1,0 +1,6 @@
+network:
+  ethernets:
+    eth0:
+      dhcp4: yes
+      dhcp6: yes
+      dhcp-identifier: mac
