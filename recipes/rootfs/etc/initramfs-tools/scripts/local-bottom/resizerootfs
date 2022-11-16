@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Shamelessly stolen from
+# https://salsa.debian.org/raspi-team/image-specs/-/blob/master/rootfs/etc/initramfs-tools/scripts/local-bottom/rpi-resizerootfs
+
 #
 # List the soft prerequisites here.  This is a space separated list of
 # names, of scripts that are in the same directory as this one, that
@@ -33,21 +36,14 @@ fi
 
 log_begin_msg "$0 resizing $ROOT"
 
-# Unmount for safety
-umount "${rootmnt}"
-
 # Expand the partition size to fill the entire device
-parted -s $rootdev resizepart $rootpart_nr 100%
+echo "Yes" | parted ---pretend-input-tty $rootdev resizepart $rootpart_nr 100%
 
 wait_for_udev 5
 
 # Now resize the filesystem
 partprobe $rootdev
-resize2fs $rootpart
 
-# Remount root
-if ! mount -r ${FSTYPE:+-t "${FSTYPE}"} ${ROOTFLAGS} "${ROOT}" "${rootmnt?}"; then
-    panic "Failed to mount ${ROOT} as root file system."
-fi
+wait_for_udev 5
 
 log_end_msg
