@@ -118,7 +118,7 @@ actions:
 
   - action: overlay
     description: Add board-specific configuration
-    source: overlays/quartz64
+    source: quartz64
     destination: /
 
   - action: overlay
