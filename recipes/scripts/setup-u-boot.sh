@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This script is intended to be run from the rootfs of the image.
 # It will generate /etc/default/u-boot, and then run u-boot-update.
-set -euo pipefail
+set -e
 
 boardname=${1:?'board name is required'}
 
