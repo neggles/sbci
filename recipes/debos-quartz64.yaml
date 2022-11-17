@@ -152,7 +152,7 @@ actions:
         options: ["discard", "noatime", "x-systemd.growfs"]
       - mountpoint: /boot/recovery
         partition: recovery
-        options: ["discard", "noatime"]
+        options: ["discard", "noatime", x-systemd.automount ]
     partitions:
       - name: firmware
         fs: none
@@ -160,16 +160,16 @@ actions:
         end: 24MiB
       - name: recovery
         partlabel: RECOVERY
-        fs: fat32
+        fs: vfat
         start: 24MiB
         end: 320MiB
       - name: root
         partlabel: rootfs
+        parttype: "b921b045-1df0-41c3-af44-4c6f280d3fae" # aarch64 rootfs
         fs: ext4
         start: 320MiB
         end: 100%
         flags: [ boot ]
-        parttype: "b921b045-1df0-41c3-af44-4c6f280d3fae" # aarch64 rootfs
 
   - action: filesystem-deploy
     description: Deploying filesystem onto image
