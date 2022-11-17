@@ -16,7 +16,6 @@ architecture: {{ $architecture }}
 actions:
   - action: debootstrap
     suite: {{ $suite }}
-    variant: minbase
     keyring-package: debian-keyring
     components:
       - main
@@ -48,6 +47,7 @@ actions:
       - sudo
       - u-boot-menu
       - u-boot-tools
+      - initramfs-tools
       - parted
       - util-linux
       - dosfstools
