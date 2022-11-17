@@ -30,15 +30,21 @@ actions:
       - apt-transport-https
       - curl
       - wget
-      - gnupg
+      - gnupg2
       - lsb-release
+
+  - action: overlay
+    description: Add apt repository configuration
+    source: overlays/apt/{{ $suite }}
+    destination: /etc/apt
 
   - action: run
     description: Install standard system utilities
     chroot: true
     command: |
       apt-get -y update
-      apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/(important|standard)$/ {printf "%s ", $1}')
+      apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/standard$/ {printf "%s ", $1}')
+      apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
 
   - action: apt
     description: Install additional utilities
@@ -121,10 +127,6 @@ actions:
     source: overlays/repart.d
     destination: /etc/repart.d
 
-  - action: overlay
-    description: Add apt repository configuration
-    source: overlays/apt/{{ $suite }}
-    destination: /etc/apt
 
   - action: overlay
     description: Add board-specific configuration
