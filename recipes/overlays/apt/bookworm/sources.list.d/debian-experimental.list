@@ -1,0 +1,4 @@
+# Uncomment to enable the experimental package repo.
+#deb https://deb.debian.org/debian experimental main contrib non-free non-free-firmware
+# Uncomment to enable sources for experimental packages.
+#deb-src https://deb.debian.org/debian experimental main contrib non-free non-free-firmware

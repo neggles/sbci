@@ -33,10 +33,16 @@ actions:
       - gnupg
       - lsb-release
 
+  - action: overlay
+    description: Add apt repository configuration
+    source: overlays/apt/{{ $suite }}
+    destination: /etc/apt
+
   - action: run
     description: Install standard system utilities
     chroot: true
     command: |
+      apt-get update
       apt-get install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
       apt-get install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/standard$/ {printf "%s ", $1}')
 
@@ -112,6 +118,11 @@ actions:
     script: scripts/setup-networking.sh '{{ $hostname }}'
 
   - action: overlay
+    description: Add systemd config files
+    source: overlays/systemd
+    destination: /etc/systemd
+
+  - action: overlay
     description: Add systemd-repart configuration
     source: overlays/repart.d
     destination: /etc/repart.d
@@ -121,15 +132,15 @@ actions:
     source: quartz64
     destination: /
 
-  - action: overlay
-    description: Add systemd config files
-    source: overlays/systemd
-    destination: /etc/systemd
-
   - action: run
-    description: Clear machine-id
+    description: Clear machine-id and misc files
     chroot: true
-    command: rm -f /etc/machine-id /var/lib/dbus/machine-id
+    command: |
+      apt-get -y clean
+      rm -f /etc/machine-id /var/lib/dbus/machine-id
+      rm -f /var/lib/systemd/random-seed
+      rm -f /var/log/*.log /var/log/apt/*.log
+      rm -rf /var/lib/apt/lists/*
 
   - action: image-partition
     description: Creating image partitions
@@ -173,9 +184,12 @@ actions:
   - action: run
     description: Create block map file
     postprocess: true
-    command: bmaptool create {{ $image }} > {{ $image }}.bmap
+    command: |
+      echo "IMAGE = $IMAGE"
+      echo "ARTIFACTDIR = $ARTIFACTDIR"
+      bmaptool create {{ $image }}.img > {{ $image }}.bmap
 
   - action: run
     description: Compress final image
     postprocess: true
-    command: tar -I 'zstd -T0 -11 --long' -cf {{ $image }}.zst {{ $image }} {{ $image }}.bmap
+    command: zstd -T0 -11 --rm {{ $image }}.img

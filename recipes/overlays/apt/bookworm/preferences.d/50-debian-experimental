@@ -1,0 +1,4 @@
+# If the experimental repo is enabled, this will ensure those packages auto-update.
+Package: *
+Pin: release a=experimental
+Pin-Priority: 101
