@@ -102,3 +102,7 @@ $RECYCLE.BIN/
 # local misc and temp
 /misc/
 /temp/
+
+# artifact temp dirs
+/recipes/kernel/
+/recipes/u-boot/
