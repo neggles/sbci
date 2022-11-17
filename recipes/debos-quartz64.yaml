@@ -16,6 +16,7 @@ architecture: {{ $architecture }}
 actions:
   - action: debootstrap
     suite: {{ $suite }}
+    variant: minbase
     components:
       - main
       - contrib
@@ -23,8 +24,14 @@ actions:
       - non-free-firmware
     mirror: {{ $mirror }}
 
+  - action: overlay
+    description: Add apt repository configuration
+    source: overlays/apt/{{ $suite }}
+    destination: /etc/apt
+
   - action: apt
     description: Install apt-transport-https and dependencies
+    recommends: true
     packages:
       - ca-certificates
       - apt-transport-https
@@ -33,21 +40,18 @@ actions:
       - gnupg2
       - lsb-release
 
-  - action: overlay
-    description: Add apt repository configuration
-    source: overlays/apt/{{ $suite }}
-    destination: /etc/apt
-
   - action: run
     description: Install standard system utilities
     chroot: true
     command: |
       apt-get -y update
+      apt-get -y upgrade --auto-remove
       apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/standard$/ {printf "%s ", $1}')
       apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
 
   - action: apt
     description: Install additional utilities
+    recommends: true
     packages:
       - sudo
       - u-boot-menu
@@ -61,6 +65,7 @@ actions:
 
   - action: apt
     description: Install networking packages
+    recommends: true
     packages:
       - bluetooth
       - netbase
@@ -71,6 +76,7 @@ actions:
 
   - action: apt
     description: Install wireless networking packages
+    recommends: true
     packages:
       - bluez-firmware
       - firmware-brcm80211
@@ -126,7 +132,6 @@ actions:
     description: Add systemd-repart configuration
     source: overlays/repart.d
     destination: /etc/repart.d
-
 
   - action: overlay
     description: Add board-specific configuration
