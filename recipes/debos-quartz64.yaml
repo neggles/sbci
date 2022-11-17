@@ -173,6 +173,8 @@ actions:
 
   - action: filesystem-deploy
     description: Deploying filesystem onto image
+    setup-fstab: false
+    setup-kernel-cmdline: false
 
   - action: raw
     description: Deploy firmware and u-boot
