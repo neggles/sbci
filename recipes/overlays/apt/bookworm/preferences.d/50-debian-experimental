@@ -1,4 +1,4 @@
-# If the experimental repo is enabled, this will ensure those packages auto-update.
+# If experimental repo is enabled, allow automatic upgrade of those packages
 Package: *
-Pin: release a=experimental
-Pin-Priority: 101
+Pin: release o=Debian, a=experimental, n=experimental
+Pin-Priority: 100
