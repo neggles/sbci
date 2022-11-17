@@ -172,23 +172,23 @@ actions:
         options: ["discard", "noatime", "x-systemd.growfs"]
       - mountpoint: /boot/recovery
         partition: recovery
-        options: ["discard", "noatime", x-systemd.automount ]
+        options: ["discard", "noatime", "x-systemd.automount" ]
     partitions:
       - name: firmware
         fs: none
         start: 64s
-        end: 24MiB
+        end: 32MiB
       - name: recovery
         partlabel: RECOVERY
         fs: vfat
-        start: 24MiB
+        start: 32MiB
         end: 320MiB
       - name: root
         partlabel: rootfs
-        parttype: "b921b045-1df0-41c3-af44-4c6f280d3fae" # aarch64 rootfs
         fs: ext4
         start: 320MiB
         end: 100%
+        parttype: "b921b045-1df0-41c3-af44-4c6f280d3fae" # aarch64 rootfs
         flags: [ boot ]
 
   - action: filesystem-deploy
@@ -206,9 +206,13 @@ actions:
     description: Create block map file
     postprocess: true
     command: |
-      bmaptool create {{ $image }} > {{ $image }}.bmap
+      echo "ARTIFACTDIR=$ARTIFACTDIR"
+      echo "IMAGE=$IMAGE"
+      ls -alh $ARTIFACTDIR
+      ls -alh .
+      bmaptool create "$ARTIFACTDIR/{{ $image }}" > "$ARTIFACTDIR/{{ $image }}.bmap"
 
   - action: run
     description: Compress final image
     postprocess: true
-    command: zstd -T0 -11 --rm {{ $image }}
+    command: zstd -T0 -11 --rm "$ARTIFACTDIR/{{ $image }}"
