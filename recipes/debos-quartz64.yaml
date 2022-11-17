@@ -190,9 +190,9 @@ actions:
     command: |
       echo "IMAGE = $IMAGE"
       echo "ARTIFACTDIR = $ARTIFACTDIR"
-      bmaptool create {{ $image }}.img > {{ $image }}.bmap
+      bmaptool create {{ $image }} > {{ $image }}.bmap
 
   - action: run
     description: Compress final image
     postprocess: true
-    command: zstd -T0 -11 --rm {{ $image }}.img
+    command: zstd -T0 -11 --rm {{ $image }}
