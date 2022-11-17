@@ -33,7 +33,7 @@ actions:
       - gnupg
       - lsb-release
 
-- action: run
+  - action: run
     description: Install standard system utilities
     chroot: true
     command: |
