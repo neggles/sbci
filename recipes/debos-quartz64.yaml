@@ -5,7 +5,7 @@
 {{- $devicetree := or .devicetree (printf "rockchip/%s-%s.dtb" $soc $board) -}}
 
 {{- $suite := or .suite "bookworm" -}}
-{{- $mirror := or .mirror "https://deb.debian.org/debian" -}}
+{{- $mirror := or .mirror "https://ftp.debian.org/debian/" -}}
 {{- $hostname := or .hostname $board -}}
 {{- $username := or .username "debiant" -}}
 {{- $password := or .password "debiant" -}}
@@ -26,6 +26,21 @@ actions:
     mirror: {{ $mirror }}
 
   - action: apt
+    description: Install usr-is-merged
+    update: false
+    packages: [usr-is-merged]
+
+  - action: apt
+    description: Install apt-transport-https and dependencies
+    recommends: false
+    packages:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg2
+      - curl
+      - wget
+
+  - action: apt
     description: Install additional utilities
     recommends: true
     packages:
@@ -39,6 +54,7 @@ actions:
       - bash-completion
       - xz-utils
       - zstd
+      - nano
 
   - action: apt
     description: Install networking packages
