@@ -95,7 +95,7 @@ jobs:
           mkdir -p output
           info "GOPATH=${GOPATH}"
           sudo ${GOPATH}/bin/debos --verbose --disable-fakemachine \
-            --artifactdir output \
+            --artifactdir "$(pwd)/output" \
             -t suite:${{ inputs.suite }} \
             -t firmware:${{ inputs.firmware }} \
             recipe-${{ inputs.board }}.yaml
