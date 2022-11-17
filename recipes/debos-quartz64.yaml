@@ -26,26 +26,25 @@ actions:
 
   - action: overlay
     description: Add apt repository configuration
-    source: overlays/apt/{{ $suite }}
+    source: overlays/apt
     destination: /etc/apt
+
+  - action: run
+    description: Do manual apt update
+    chroot: true
+    command: apt-get -y clean && apt-get -y update
 
   - action: apt
     description: Install apt-transport-https and dependencies
     recommends: true
     packages:
-      - ca-certificates
       - apt-transport-https
-      - curl
-      - wget
-      - gnupg2
-      - lsb-release
 
   - action: run
     description: Install standard system utilities
     chroot: true
     command: |
       apt-get -y update
-      apt-get -y upgrade --auto-remove
       apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/standard$/ {printf "%s ", $1}')
       apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
 
@@ -53,6 +52,10 @@ actions:
     description: Install additional utilities
     recommends: true
     packages:
+      - curl
+      - wget
+      - gnupg2
+      - lsb-release
       - sudo
       - u-boot-menu
       - u-boot-tools

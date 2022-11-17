@@ -1,4 +1,0 @@
-# Uncomment to enable the 'bookworm-backports' repository. This won't have any packages
-# available until after bookworm is released, so it's disabled by default.
-#deb https://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware
-#deb-src https://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware
