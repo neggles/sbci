@@ -1,6 +1,7 @@
 [Unit]
 Description=generate SSH host keys
 ConditionPathExistsGlob=!/etc/ssh/ssh_host_*_key
+Before=sshd.service
 
 [Service]
 Type=oneshot

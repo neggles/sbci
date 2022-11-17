@@ -26,26 +26,6 @@ actions:
     mirror: {{ $mirror }}
 
   - action: apt
-    description: Install apt-transport-https and dependencies
-    recommends: false
-    packages:
-      - apt-transport-https
-      - ca-certificates
-
-  - action: overlay
-    description: Add apt repository configuration
-    source: overlays/apt
-    destination: /etc/apt
-
-  - action: run
-    description: Do manual apt update
-    chroot: true
-    command: |
-      apt-get -y clean
-      apt-get -y update
-      apt-get -y --fix-broken install
-
-  - action: apt
     description: Install additional utilities
     recommends: true
     packages:
@@ -91,6 +71,11 @@ actions:
       apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
 
   - action: overlay
+    description: Add apt repository configuration
+    source: overlays/apt
+    destination: /etc/apt
+
+  - action: overlay
     description: Copy kernel package
     source: kernel
     destination: /usr/local/kernel
@@ -129,9 +114,17 @@ actions:
     script: scripts/setup-networking.sh '{{ $hostname }}'
 
   - action: overlay
-    description: Add systemd config files
+    description: Add systemd unit files
     source: overlays/systemd
     destination: /etc/systemd
+
+  - action: run
+    description: EnableSSH key regeneration unit
+    chroot: true
+    command: |
+      mkdir -p /etc/systemd/system/multi-user.target.wants
+      cd /etc/systemd/system/multi-user.target.wants
+      ln -sf ../generate-ssh-host-keys.service
 
   - action: overlay
     description: Add systemd-repart configuration
@@ -148,8 +141,7 @@ actions:
     chroot: true
     command: |
       apt-get -y clean
-      rm -f /etc/machine-id /var/lib/dbus/machine-id
-      rm -f /var/lib/systemd/random-seed
+      rm -f /etc/machine-id /var/lib/dbus/machine-id /var/lib/systemd/random-seed
       rm -f /var/log/*.log /var/log/apt/*.log
       rm -rf /var/lib/apt/lists/*
 
@@ -198,8 +190,6 @@ actions:
     description: Create block map file
     postprocess: true
     command: |
-      echo "IMAGE = $IMAGE"
-      echo "ARTIFACTDIR = $ARTIFACTDIR"
       bmaptool create {{ $image }} > {{ $image }}.bmap
 
   - action: run
