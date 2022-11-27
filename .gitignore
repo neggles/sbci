@@ -94,6 +94,8 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+.vscode-ctags
+
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,windows,visualstudiocode
 
 # code-workspace files in root
