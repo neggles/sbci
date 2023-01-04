@@ -140,3 +140,5 @@ jobs:
         with:
           name: image-matrix
           path: ${{ inputs.board }}.json
+          retention-days: 60
+          if-no-files-found: error
