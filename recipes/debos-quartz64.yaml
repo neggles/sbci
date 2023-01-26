@@ -112,7 +112,7 @@ actions:
   - action: run
     description: U-Boot menu update
     chroot: true
-    script: scripts/setup-u-boot.sh '{{ $devicetree }}' arm64
+    script: scripts/setup-u-boot.sh 'rockchip/{{ $devicetree }}' arm64
 
   - action: run
     description: Set up user
