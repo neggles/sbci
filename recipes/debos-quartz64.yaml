@@ -101,7 +101,7 @@ actions:
     chroot: true
     command: |
       rm /usr/local/kernel/*-dbg_*.deb
-      DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt -yq install /usr/local/kernel/*.deb
+      DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical apt -yq install /usr/local/kernel/*.deb
       rm -fr /usr/local/kernel
 
   - action: overlay
