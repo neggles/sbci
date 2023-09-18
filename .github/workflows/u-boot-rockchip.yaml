@@ -69,7 +69,7 @@ jobs:
 
       - name: Clone toolchain repository
         id: get-toolchain
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: neggles/sbci-toolchains
           ref: u-boot-rockchip
@@ -77,14 +77,14 @@ jobs:
 
       - name: Clone rkbin repository
         id: get-rkbin
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: rockchip-linux/rkbin
           path: rkbin
 
       - name: Clone u-boot repository
         id: get-uboot
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ inputs.source-repo }}
           ref: ${{ inputs.source-ref }}
