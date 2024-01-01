@@ -106,7 +106,7 @@ jobs:
     steps:
       - name: Download u-boot artifacts
         id: download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: image-matrix
           path: matrix
