@@ -62,7 +62,7 @@ jobs:
 
       - name: Download u-boot config
         id: get-config
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: u-boot-configs
           path: configs
@@ -116,7 +116,7 @@ jobs:
 
       - name: Upload build outputs
         id: upload-u-boot
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: u-boot-${{ inputs.board }}
           path: |
@@ -136,7 +136,7 @@ jobs:
 
       - name: Upload matrix entry
         id: upload-matrix
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: image-matrix
           path: ${{ inputs.board }}.json

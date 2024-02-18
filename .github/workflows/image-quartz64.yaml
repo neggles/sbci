@@ -52,7 +52,7 @@ jobs:
           cp -L ./configs/kernel/${{ env.kernel-config }} ./kernel.config
 
       - name: Upload kernel config
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-config
           path: kernel.config
@@ -60,7 +60,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload u-boot configs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: u-boot-configs
           path: configs/u-boot/${{ env.board-soc }}/*
@@ -106,7 +106,7 @@ jobs:
     steps:
       - name: Download u-boot artifacts
         id: download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: image-matrix
           path: matrix
