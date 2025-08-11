@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Clone repo
         id: clone
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install dependencies
         id: deps
